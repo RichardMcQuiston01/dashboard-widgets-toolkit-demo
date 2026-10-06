@@ -6,7 +6,9 @@
 
 - The intentionally failing widget is now behind an "Error demo" toggle (off
   by default) and clearly labelled as an intentional demo, instead of always
-  showing an unexplained error card.
+  showing an unexplained error card. Its message text now matches the card
+  body size.
+- Dashboard loads ignore stale results when the widget set changes mid-load.
 
 ### Added
 
