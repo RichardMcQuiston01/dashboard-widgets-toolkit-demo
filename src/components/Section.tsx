@@ -14,8 +14,11 @@ export function Section({
   children,
 }: SectionProps): ReactElement {
   return (
-    <section id={id} className="mt-12 scroll-mt-4">
-      <h2 className="text-2xl font-bold text-brand-700 dark:text-brand-200">
+    <section aria-labelledby={`${id}-heading`}>
+      <h2
+        id={`${id}-heading`}
+        className="text-2xl font-bold text-brand-700 dark:text-brand-200"
+      >
         {title}
       </h2>
       <p className="mt-1 mb-4 max-w-3xl text-sm text-slate-600 dark:text-slate-400">

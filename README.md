@@ -37,9 +37,12 @@ npm run format:check # Prettier
 
 ### Examples
 
-The demo is a Vite + React + TypeScript + Tailwind CSS single page app:
+The demo is a Vite + React + TypeScript + Tailwind CSS single page app with
+four tabs (deep-linkable, e.g. `#validation`) under a header that collapses to
+just the title as you scroll (hover, focus or tap the chevron to expand it),
+a floating jump-to-top button and a copyright footer:
 
-- **Interactive dashboard**: all seven widget kinds, an empty state and a
+- **Interactive dashboard** tab: all seven widget kinds, an empty state and a
   failing provider, resolved with `resolveWidgets`. Move, hide and minimise
   cards; the layout persists in `localStorage`.
 - **Locale switcher**: formats numbers and currency per locale.
@@ -49,7 +52,8 @@ The demo is a Vite + React + TypeScript + Tailwind CSS single page app:
 grid-auto-flow: dense` on `.dwt-grid`). Toggle it off to see the default.
 - **Light / dark theme** (blue brand palette via `--dwt-*` custom
   properties) and a **Refresh** that re-runs the providers.
-- **Payload validation playground**: `validateWidgetData` with field-level
+- **Overview** tab: what the toolkit is, its features and widget kinds.
+- **Payload validation** tab, a playground: `validateWidgetData` with field-level
   errors.
 
 Widgets and simulated providers live in

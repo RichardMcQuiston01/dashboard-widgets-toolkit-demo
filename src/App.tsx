@@ -13,9 +13,14 @@ import {
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 
+import { BackToTop } from './components/BackToTop';
+import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
+import { Footer } from './components/Footer';
+import { Overview } from './components/Overview';
 import { Playground } from './components/Playground';
 import { Section } from './components/Section';
+import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import {
   widgetDefinitions,
   widgetProviders,
@@ -61,10 +66,23 @@ function initialTheme(): Theme {
     : 'light';
 }
 
+const TAB_IDS: readonly string[] = [
+  'dashboard',
+  'overview',
+  'validation',
+  'usage',
+];
+
+function readTabFromHash(): string {
+  const hashValue: string = window.location.hash.replace('#', '');
+  return TAB_IDS.includes(hashValue) ? hashValue : 'dashboard';
+}
+
 export function App(): ReactElement {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [localeIndex, setLocaleIndex] = useState<number>(0);
   const [layout, setLayout] = useState<DashboardLayout>(readStoredLayout);
+  const [activeTab, setActiveTab] = useState<string>(readTabFromHash);
   const [isFilled, setIsFilled] = useState<boolean>(true);
   const [refreshCount, setRefreshCount] = useState<number>(0);
   const [widgets, setWidgets] = useState<readonly DashboardWidget[]>(() =>
@@ -94,6 +112,19 @@ export function App(): ReactElement {
     void loadWidgets();
   }, [loadWidgets]);
 
+  function handleTabChange(tabId: string): void {
+    setActiveTab(tabId);
+    window.history.replaceState(null, '', `#${tabId}`);
+  }
+
+  useEffect(() => {
+    function handleHashChange(): void {
+      setActiveTab(readTabFromHash());
+    }
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   function handleRefresh(): void {
     setWidgets(loadingWidgets(widgetDefinitions));
     setRefreshCount((count) => count + 1);
@@ -111,44 +142,11 @@ export function App(): ReactElement {
   const buttonClass: string =
     'rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-700 shadow-sm hover:bg-brand-50 aria-pressed:border-brand-600 aria-pressed:bg-brand-600 aria-pressed:text-white dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100 dark:hover:bg-brand-800';
 
-  return (
-    <div className={isFilled ? 'dwt-fill' : ''}>
-      <header className="bg-linear-to-br from-brand-900 via-brand-700 to-brand-500 text-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <p className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase">
-            Live demo
-          </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Dashboard Widgets Toolkit
-          </h1>
-          <p className="mt-3 max-w-3xl text-lg text-brand-100">
-            Typed widget definitions, validated JSON payloads, per-viewer layout
-            and accessible React renderers. Everything below is rendered by{' '}
-            <code>@richardmcquiston01/dashboard-widgets-toolkit</code> with
-            simulated data providers.
-          </p>
-          <p className="mt-3 flex flex-wrap gap-4 text-sm">
-            <a
-              className="font-medium text-accent-400 underline"
-              href="https://github.com/RichardMcQuiston01/dashboard-widgets-toolkit"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Package on GitHub
-            </a>
-            <a
-              className="font-medium text-accent-400 underline"
-              href="https://github.com/RichardMcQuiston01/dashboard-widgets-toolkit-demo"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Demo source
-            </a>
-          </p>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+  const tabs: readonly TabDefinition[] = [
+    {
+      id: 'dashboard',
+      label: 'Interactive dashboard',
+      panel: (
         <Section
           id="dashboard"
           title="Interactive dashboard"
@@ -213,7 +211,13 @@ export function App(): ReactElement {
             />
           </WidgetSettingsProvider>
         </Section>
-
+      ),
+    },
+    { id: 'overview', label: 'Overview', panel: <Overview /> },
+    {
+      id: 'validation',
+      label: 'Payload validation',
+      panel: (
         <Section
           id="validation"
           title="Payload validation"
@@ -221,7 +225,12 @@ export function App(): ReactElement {
         >
           <Playground />
         </Section>
-
+      ),
+    },
+    {
+      id: 'usage',
+      label: 'Use it in your app',
+      panel: (
         <Section
           id="usage"
           title="Use it in your app"
@@ -235,8 +244,58 @@ import { Dashboard } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
         </Section>
+      ),
+    },
+  ];
+
+  return (
+    <div className={isFilled ? 'dwt-fill' : ''}>
+      <CollapsingHeader
+        title="Dashboard Widgets Toolkit"
+        details={
+          <>
+            <p className="mt-3 max-w-3xl text-lg text-brand-100">
+              Typed widget definitions, validated JSON payloads, per-viewer
+              layout and accessible React renderers. Everything below is
+              rendered by{' '}
+              <code>@richardmcquiston01/dashboard-widgets-toolkit</code> with
+              simulated data providers.
+            </p>
+            <p className="mt-3 flex flex-wrap gap-4 text-sm">
+              <a
+                className="font-medium text-accent-400 underline"
+                href="https://github.com/RichardMcQuiston01/dashboard-widgets-toolkit"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Package on GitHub
+              </a>
+              <a
+                className="font-medium text-accent-400 underline"
+                href="https://github.com/RichardMcQuiston01/dashboard-widgets-toolkit-demo"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Demo source
+              </a>
+            </p>
+          </>
+        }
+        nav={
+          <TabList
+            tabs={tabs}
+            activeId={activeTab}
+            onChange={handleTabChange}
+          />
+        }
+      />
+
+      <main className="mx-auto max-w-6xl px-4 pt-8 pb-16 sm:px-6">
+        <TabPanels tabs={tabs} activeId={activeTab} />
       </main>
 
+      <Footer />
+      <BackToTop />
       <DonateCard />
     </div>
   );
