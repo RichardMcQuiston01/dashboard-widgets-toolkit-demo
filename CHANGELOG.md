@@ -29,6 +29,7 @@
 
 ### Added
 
+- README screenshots of the demo (light and dark, in `docs/`).
 - Vite + React + TypeScript + Tailwind CSS single page app demonstrating
   `@richardmcquiston01/dashboard-widgets-toolkit`: interactive dashboard
   (all widget kinds, empty and error states, persisted layout), locale and

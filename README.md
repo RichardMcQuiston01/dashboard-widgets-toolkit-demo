@@ -9,6 +9,19 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
 
 **Live demo:** https://dashboard-widgets-toolkit-demo.vercel.app/
 
+<p align="center">
+  <a href="https://dashboard-widgets-toolkit-demo.vercel.app/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot-dark.png" />
+      <img
+        src="./docs/screenshot-light.png"
+        alt="The demo's interactive dashboard: a blue header with tabs, then KPI, gauge, text and bar-chart widgets laid out in a grid with equal-height cards."
+        width="900"
+      />
+    </picture>
+  </a>
+</p>
+
 ## Getting Started
 
 ### Prerequisites
