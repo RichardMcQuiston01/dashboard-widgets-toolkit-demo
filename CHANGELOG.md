@@ -16,8 +16,8 @@
 - "Fill rows" is now the toolkit's per-widget `fill` setting instead of a CSS
   override in the demo: each widget definition sets `fill: 'both'`, and the
   toggle ("Fill widgets") removes it to show the default layout.
-- The vendored toolkit tarball is rebuilt from the toolkit's `feature/widget-fill`
-  branch (adds `fill`); swap it for the npm release once published.
+- The toolkit now comes from npm (`@richardmcquiston01/dashboard-widgets-toolkit`
+  `^0.2.0`, which adds `fill`) instead of a vendored tarball.
 - The intentionally failing widget is now behind an "Error demo" toggle (off
   by default) and clearly labelled as an intentional demo, instead of always
   showing an unexplained error card. Its message text now matches the card
@@ -44,9 +44,8 @@
 - `vercel.json` for Vercel deployment.
 - Live demo URL (https://dashboard-widgets-toolkit-demo.vercel.app/) in the
   README.
-- Temporary vendored tarball of the toolkit (v0.1.0) until it is published to
-  npm.
 
 ### Removed
 
+- The vendored toolkit tarball (`vendor/`).
 - The "Live demo" label above the title.

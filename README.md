@@ -21,10 +21,9 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
 npm install
 ```
 
-> `@richardmcquiston01/dashboard-widgets-toolkit` is not on npm yet, so
-> `package.json` installs the packed tarball in [`vendor/`](./vendor). Once
-> the package is published, replace it with `npm install
-@richardmcquiston01/dashboard-widgets-toolkit` and delete `vendor/`.
+The demo uses the published
+[`@richardmcquiston01/dashboard-widgets-toolkit`](https://www.npmjs.com/package/@richardmcquiston01/dashboard-widgets-toolkit)
+package (`^0.2.0`).
 
 ### Usage
 
