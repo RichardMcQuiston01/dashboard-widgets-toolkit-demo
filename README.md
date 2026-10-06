@@ -7,6 +7,8 @@
 
 Single Page Application (SPA) demo page demonstrating the features of the dashboard-widgets NPM package.
 
+**Live demo:** https://dashboard-widgets-toolkit-demo.vercel.app/
+
 ## Getting Started
 
 ### Prerequisites
