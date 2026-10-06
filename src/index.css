@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+@import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';
+@import './donate-widget.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
