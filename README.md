@@ -43,7 +43,12 @@ The demo is a Vite + React + TypeScript + Tailwind CSS single page app:
   failing provider, resolved with `resolveWidgets`. Move, hide and minimise
   cards; the layout persists in `localStorage`.
 - **Locale switcher**: formats numbers and currency per locale.
-- **Light / dark theme** and a **Refresh** that re-runs the providers.
+- **Fill rows**: stretches cards to equal height per row and packs them
+  densely. The toolkit grid aligns cards to the start, so this is a few lines
+  of CSS in [`src/index.css`](./src/index.css) (`align-items: stretch;
+grid-auto-flow: dense` on `.dwt-grid`). Toggle it off to see the default.
+- **Light / dark theme** (blue brand palette via `--dwt-*` custom
+  properties) and a **Refresh** that re-runs the providers.
 - **Payload validation playground**: `validateWidgetData` with field-level
   errors.
 
