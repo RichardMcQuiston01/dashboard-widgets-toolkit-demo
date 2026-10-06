@@ -48,7 +48,9 @@ a floating jump-to-top button and a copyright footer:
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
-- **Locale switcher**: formats numbers and currency per locale.
+- **Locale switcher**: formats numbers and currency per locale. Providers
+  receive the locale and currency in their context and set `currency` on
+  `KPI` and `GRAPH` payloads (the toolkit defaults to USD otherwise).
 - **Fill rows**: stretches cards to equal height per row and packs them
   densely. The toolkit grid aligns cards to the start, so this is a few lines
   of CSS in [`src/index.css`](./src/index.css) (`align-items: stretch` and

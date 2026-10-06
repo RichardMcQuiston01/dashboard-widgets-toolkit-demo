@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Fixed
+
+- The locale switcher now changes the currency symbol everywhere: the KPI and
+  chart payloads set `currency` (the toolkit defaults to USD without it), and
+  the "Recent orders" table formats totals with `formatValue` instead of
+  hard-coded `$` strings.
+
 ### Changed
 
 - The intentionally failing widget is now behind an "Error demo" toggle (off

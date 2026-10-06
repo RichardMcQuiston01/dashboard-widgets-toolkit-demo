@@ -117,12 +117,18 @@ export function App(): ReactElement {
     const context: ShopContext = {
       shopName: 'Demo Shop',
       currency: localeOption.currency,
+      locale: localeOption.locale,
       refreshCount,
     };
     // Simulate network latency so the loading placeholders are visible.
     await new Promise<void>((resolve) => setTimeout(resolve, 600));
     return resolveWidgets(activeDefinitions, widgetProviders, context);
-  }, [activeDefinitions, localeOption.currency, refreshCount]);
+  }, [
+    activeDefinitions,
+    localeOption.currency,
+    localeOption.locale,
+    refreshCount,
+  ]);
 
   useEffect(() => {
     // Ignore results from a superseded load (for example after a toggle).
