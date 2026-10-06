@@ -15,7 +15,9 @@ export function Section({
 }: SectionProps): ReactElement {
   return (
     <section id={id} className="mt-12 scroll-mt-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="text-2xl font-bold text-brand-700 dark:text-brand-200">
+        {title}
+      </h2>
       <p className="mt-1 mb-4 max-w-3xl text-sm text-slate-600 dark:text-slate-400">
         {description}
       </p>

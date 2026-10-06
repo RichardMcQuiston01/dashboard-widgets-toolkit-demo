@@ -49,7 +49,7 @@ export function Playground(): ReactElement {
           onChange={(event) => setRawJson(event.target.value)}
           spellCheck={false}
           rows={12}
-          className="mt-1 w-full rounded-md border border-slate-300 bg-white p-3 font-mono text-sm dark:border-slate-700 dark:bg-slate-900"
+          className="mt-1 w-full rounded-md border border-brand-200 bg-white p-3 font-mono text-sm dark:border-brand-700 dark:bg-brand-900"
         />
       </label>
       <div role="status" aria-live="polite">

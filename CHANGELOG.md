@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Changed
+
+- Blue brand theme: gradient header banner, tinted page, blue-first chart
+  palette and card accents, in light and dark.
+- Donate card shrunk to 75% and recoloured to match the theme.
+
+### Added
+
+- "Fill rows" toggle (on by default) that equalises card heights and packs
+  the grid densely, removing gaps beside tall widgets.
+
 ### Added
 
 - Vite + React + TypeScript + Tailwind CSS single page app demonstrating
