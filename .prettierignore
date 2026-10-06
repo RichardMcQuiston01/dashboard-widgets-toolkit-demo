@@ -3,5 +3,4 @@ node_modules
 out
 package-lock.json
 dist
-vendor
 package-lock.json
