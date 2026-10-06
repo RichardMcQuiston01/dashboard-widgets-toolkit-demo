@@ -4,6 +4,14 @@
 
 ### Changed
 
+- "Fill rows" is now the toolkit's per-widget `fill` setting instead of a CSS
+  override in the demo: each widget definition sets `fill: 'both'`, and the
+  toggle ("Fill widgets") removes it to show the default layout.
+- The vendored toolkit tarball is rebuilt from the toolkit's `feature/widget-fill`
+  branch (adds `fill`); swap it for the npm release once published.
+
+### Changed
+
 - The intentionally failing widget is now behind an "Error demo" toggle (off
   by default) and clearly labelled as an intentional demo, instead of always
   showing an unexplained error card. Its message text now matches the card
