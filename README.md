@@ -42,19 +42,22 @@ four tabs (deep-linkable, e.g. `#validation`) under a header that keeps the titl
 in view while the description and links fold away as you scroll,
 a floating jump-to-top button and a copyright footer:
 
-- **Interactive dashboard** tab: all seven widget kinds, an empty state and a
-  failing provider, resolved with `resolveWidgets`. Move, hide and minimise
-  cards; the layout persists in `localStorage`.
+- **Interactive dashboard** tab: all seven widget kinds plus an empty state,
+  resolved with `resolveWidgets`. Move, hide and minimise cards; the layout
+  persists in `localStorage`.
+- **Error demo** toggle (off by default): adds a clearly labelled widget whose
+  provider intentionally throws, showing that one failure stays on its own
+  card (with a Retry button) while the rest of the dashboard keeps working.
 - **Locale switcher**: formats numbers and currency per locale.
 - **Fill rows**: stretches cards to equal height per row and packs them
   densely. The toolkit grid aligns cards to the start, so this is a few lines
-  of CSS in [`src/index.css`](./src/index.css) (`align-items: stretch;
-grid-auto-flow: dense` on `.dwt-grid`). Toggle it off to see the default.
-- **Light / dark theme** (blue brand palette via `--dwt-*` custom
-  properties) and a **Refresh** that re-runs the providers.
+  of CSS in [`src/index.css`](./src/index.css) (`align-items: stretch` and
+  `grid-auto-flow: dense` on `.dwt-grid`). Toggle it off to see the default.
+- **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
+  and a **Refresh** that re-runs the providers.
 - **Overview** tab: what the toolkit is, its features and widget kinds.
-- **Payload validation** tab, a playground: `validateWidgetData` with field-level
-  errors.
+- **Payload validation** tab, a playground: `validateWidgetData` with
+  field-level errors.
 
 Widgets and simulated providers live in
 [`src/data/widgets.ts`](./src/data/widgets.ts).
