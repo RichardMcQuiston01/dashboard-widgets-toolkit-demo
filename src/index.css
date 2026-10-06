@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+@import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';
+@import './donate-widget.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Brand palette: a deep blue in the family of the other demo sites. */
+@theme {
+  --color-brand-50: #eef5fc;
+  --color-brand-100: #d9e8f8;
+  --color-brand-200: #b6d2f1;
+  --color-brand-300: #86b4e6;
+  --color-brand-400: #4f8fd6;
+  --color-brand-500: #2271c2;
+  --color-brand-600: #0f5394;
+  --color-brand-700: #0c4278;
+  --color-brand-800: #0a3560;
+  --color-brand-900: #07243f;
+  --color-accent-400: #ffb347;
+  --color-accent-500: #f59e0b;
+}
+
+:root {
+  color-scheme: light;
+  --page-bg: #eaf1f9;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page-bg: #06101d;
+}
+
+body {
+  background: var(--page-bg);
+  @apply text-slate-900 dark:text-slate-100;
+}
+
+/* Toolkit theme: blue-first chart palette, tinted surfaces. */
+.dwt-dashboard,
+.dwt-card {
+  --dwt-surface: #ffffff;
+  --dwt-border: rgba(15, 83, 148, 0.16);
+  --dwt-link: #0f5394;
+  --dwt-meter-track: #d9e8f8;
+  --dwt-bar-track: #e4edf8;
+  --dwt-series-1: #0f5394;
+  --dwt-series-2: #f59e0b;
+  --dwt-series-3: #14a38b;
+  --dwt-series-4: #7c5cd6;
+  --dwt-radius: 12px;
+}
+
+:root[data-theme='dark'] .dwt-dashboard,
+:root[data-theme='dark'] .dwt-card {
+  --dwt-surface: #0d1b2e;
+  --dwt-border: rgba(134, 180, 230, 0.2);
+  --dwt-link: #86b4e6;
+  --dwt-meter-track: #123a66;
+  --dwt-bar-track: #1b3150;
+  --dwt-series-1: #4f8fd6;
+  --dwt-series-2: #ffb347;
+  --dwt-series-3: #2dc4aa;
+  --dwt-series-4: #a48cf0;
+}
+
+.dwt-card {
+  border-top: 3px solid var(--dwt-series-1);
+  box-shadow:
+    0 1px 2px rgba(7, 36, 63, 0.06),
+    0 6px 16px rgba(7, 36, 63, 0.06);
+}
+
+/* Donate card: 75% of the stock size, recoloured to match the brand. */
+.donate-card {
+  zoom: 0.75;
+  --donate-bg: #07243f;
+  --donate-border: #1a4a7a;
+  --donate-link: #ffb347;
+  --donate-link-hover: #ffc978;
+}
+
+/* Match the error message to the card body text size. */
+.dwt-error-message {
+  font-size: 0.875rem;
+}
