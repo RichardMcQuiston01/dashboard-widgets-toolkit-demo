@@ -70,16 +70,6 @@ body {
     0 6px 16px rgba(7, 36, 63, 0.06);
 }
 
-/*
-  Fill mode (demo-only). The toolkit grid aligns cards to the start so each
-  card is as tall as its content. Stretching rows and packing densely makes
-  neighbouring cards the same height and removes holes.
-*/
-.dwt-fill .dwt-grid {
-  align-items: stretch;
-  grid-auto-flow: dense;
-}
-
 /* Donate card: 75% of the stock size, recoloured to match the brand. */
 .donate-card {
   zoom: 0.75;

@@ -51,10 +51,11 @@ a floating jump-to-top button and a copyright footer:
 - **Locale switcher**: formats numbers and currency per locale. Providers
   receive the locale and currency in their context and set `currency` on
   `KPI` and `GRAPH` payloads (the toolkit defaults to USD otherwise).
-- **Fill rows**: stretches cards to equal height per row and packs them
-  densely. The toolkit grid aligns cards to the start, so this is a few lines
-  of CSS in [`src/index.css`](./src/index.css) (`align-items: stretch` and
-  `grid-auto-flow: dense` on `.dwt-grid`). Toggle it off to see the default.
+- **Fill widgets** toggle: every widget definition in
+  [`src/data/widgets.ts`](./src/data/widgets.ts) sets the toolkit's per-widget
+  `fill: 'both'`, so cards stretch to their row's height and take the columns
+  left over in their row. The toggle drops `fill` from the definitions to show
+  the default layout (cards only as big as their content).
 - **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
   and a **Refresh** that re-runs the providers.
 - **Overview** tab: what the toolkit is, its features and widget kinds.

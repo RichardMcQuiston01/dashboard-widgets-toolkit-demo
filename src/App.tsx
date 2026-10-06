@@ -96,10 +96,11 @@ export function App(): ReactElement {
   const [refreshCount, setRefreshCount] = useState<number>(0);
   const activeDefinitions: readonly WidgetDefinition[] = useMemo(
     () =>
-      showErrorDemo
-        ? widgetDefinitions
-        : widgetDefinitions.filter(({ key }) => key !== ERROR_DEMO_KEY),
-    [showErrorDemo]
+      widgetDefinitions
+        .filter(({ key }) => showErrorDemo || key !== ERROR_DEMO_KEY)
+        // Each definition sets `fill`; dropping it shows the default layout.
+        .map(({ fill, ...rest }) => (isFilled ? { ...rest, fill } : rest)),
+    [isFilled, showErrorDemo]
   );
   const [widgets, setWidgets] = useState<readonly DashboardWidget[]>(() =>
     loadingWidgets(activeDefinitions)
@@ -228,7 +229,7 @@ export function App(): ReactElement {
               aria-pressed={isFilled}
               onClick={() => setIsFilled((current) => !current)}
             >
-              Fill rows: {isFilled ? 'on' : 'off'}
+              Fill widgets: {isFilled ? 'on' : 'off'}
             </button>
             <button
               type="button"
@@ -290,7 +291,7 @@ import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
   ];
 
   return (
-    <div className={isFilled ? 'dwt-fill' : ''}>
+    <div>
       <CollapsingHeader
         title="Dashboard Widgets Toolkit"
         details={
