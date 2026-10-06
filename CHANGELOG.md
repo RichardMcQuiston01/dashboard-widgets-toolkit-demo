@@ -10,8 +10,8 @@
   theme switchers, and a payload validation playground.
 - Tabs (Interactive dashboard, Overview, Payload validation, Use it in your
   app) with arrow-key navigation and URL hash deep links.
-- Header and tabs in one block that collapses to just the title on scroll and
-  re-expands on hover, focus or tap.
+- Fixed header (title and tabs) that folds away its description and links on
+  scroll while keeping the title and tabs visible.
 - Floating jump-to-top button and a copyright footer.
 - "Fill rows" toggle (on by default) that equalises card heights and packs
   the grid densely, removing gaps beside tall widgets.
