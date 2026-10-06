@@ -38,8 +38,8 @@ npm run format:check # Prettier
 ### Examples
 
 The demo is a Vite + React + TypeScript + Tailwind CSS single page app with
-four tabs (deep-linkable, e.g. `#validation`) under a header that collapses to
-just the title as you scroll (hover, focus or tap the chevron to expand it),
+four tabs (deep-linkable, e.g. `#validation`) under a header that keeps the title and tabs
+in view while the description and links fold away as you scroll,
 a floating jump-to-top button and a copyright footer:
 
 - **Interactive dashboard** tab: all seven widget kinds plus an empty state,
