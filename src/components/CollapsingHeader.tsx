@@ -68,7 +68,7 @@ export function CollapsingHeader({
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <h1
             className={`font-bold tracking-tight transition-[font-size,padding] duration-200 motion-reduce:transition-none ${
-              isScrolled ? 'pt-2.5 text-xl' : 'pt-10 text-4xl sm:text-5xl'
+              isScrolled ? 'pt-2.5 text-xl' : 'pt-4 text-2xl sm:text-3xl'
             }`}
           >
             {title}

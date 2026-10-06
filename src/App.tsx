@@ -118,12 +118,18 @@ export function App(): ReactElement {
     const context: ShopContext = {
       shopName: 'Demo Shop',
       currency: localeOption.currency,
+      locale: localeOption.locale,
       refreshCount,
     };
     // Simulate network latency so the loading placeholders are visible.
     await new Promise<void>((resolve) => setTimeout(resolve, 600));
     return resolveWidgets(activeDefinitions, widgetProviders, context);
-  }, [activeDefinitions, localeOption.currency, refreshCount]);
+  }, [
+    activeDefinitions,
+    localeOption.currency,
+    localeOption.locale,
+    refreshCount,
+  ]);
 
   useEffect(() => {
     // Ignore results from a superseded load (for example after a toggle).
@@ -289,15 +295,12 @@ import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
       <CollapsingHeader
         title="Dashboard Widgets Toolkit"
         details={
-          <>
-            <p className="mt-3 max-w-3xl text-lg text-brand-100">
-              Typed widget definitions, validated JSON payloads, per-viewer
-              layout and accessible React renderers. Everything below is
-              rendered by{' '}
-              <code>@richardmcquiston01/dashboard-widgets-toolkit</code> with
-              simulated data providers.
+          <div className="mt-1 flex flex-col gap-x-6 gap-y-1 text-sm sm:flex-row sm:items-baseline sm:justify-between">
+            <p className="text-brand-100">
+              Typed widgets, validated JSON payloads and accessible React
+              renderers.
             </p>
-            <p className="mt-3 flex flex-wrap gap-4 text-sm">
+            <p className="flex shrink-0 gap-4">
               <a
                 className="font-medium text-accent-400 underline"
                 href="https://github.com/RichardMcQuiston01/dashboard-widgets-toolkit"
@@ -315,7 +318,7 @@ import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
                 Demo source
               </a>
             </p>
-          </>
+          </div>
         }
         nav={
           <TabList

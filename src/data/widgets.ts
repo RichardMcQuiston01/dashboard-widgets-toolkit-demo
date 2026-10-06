@@ -1,6 +1,7 @@
 import {
   defineWidget,
   emptyWidget,
+  formatValue,
   type WidgetContext,
   type WidgetDefinition,
   type WidgetProviders,
@@ -10,6 +11,8 @@ import {
 export interface ShopContext extends WidgetContext {
   readonly shopName: string;
   readonly currency: string;
+  /** BCP 47 locale used to format values the demo builds as text. */
+  readonly locale: string;
   /** Bumps on each refresh so the demo numbers visibly change. */
   readonly refreshCount: number;
 }
@@ -124,13 +127,14 @@ function wobble(seed: number, spread: number): number {
 }
 
 export const widgetProviders: WidgetProviders<ShopContext> = {
-  revenue: ({ refreshCount }) => {
+  revenue: ({ refreshCount, currency }) => {
     const current: number = 18420 + wobble(refreshCount + 1, 2500);
     return {
       kind: 'KPI',
       value: Math.round(current * 100) / 100,
       previous: 16200,
       format: 'currency',
+      currency,
       label: 'Revenue this month',
       hint: 'vs. last month',
     };
@@ -154,10 +158,11 @@ export const widgetProviders: WidgetProviders<ShopContext> = {
     value: 'All channels in sync',
     label: shopName,
   }),
-  monthly: ({ refreshCount }) => ({
+  monthly: ({ refreshCount, currency }) => ({
     kind: 'GRAPH',
     chartType: 'bar',
     valueFormat: 'currency',
+    currency,
     xLabel: 'Month',
     series: [
       {
@@ -226,21 +231,28 @@ export const widgetProviders: WidgetProviders<ShopContext> = {
       { title: 'Brass bookmark', valueLabel: '1 left', detail: 'SKU BKM-BR' },
     ],
   }),
-  'recent-orders': () => ({
-    kind: 'TABLE',
-    columns: [
-      { label: 'Order' },
-      { label: 'Customer' },
-      { label: 'Total', numeric: true },
-    ],
-    rows: [
-      [{ text: '#1042' }, { text: 'Ada L.' }, { text: '$84.00' }],
-      [{ text: '#1041' }, { text: 'Grace H.' }, { text: '$32.50' }],
-      [{ text: '#1040' }, { text: 'Alan T.' }, { text: '$129.99' }],
-      [{ text: '#1039' }, { text: 'Linus T.' }, { text: '$18.00' }],
-    ],
-    footer: 'Showing 4 of 412 orders',
-  }),
+  'recent-orders': ({ currency, locale }) => {
+    const orders: readonly (readonly [string, string, number])[] = [
+      ['#1042', 'Ada L.', 84],
+      ['#1041', 'Grace H.', 32.5],
+      ['#1040', 'Alan T.', 129.99],
+      ['#1039', 'Linus T.', 18],
+    ];
+    return {
+      kind: 'TABLE',
+      columns: [
+        { label: 'Order' },
+        { label: 'Customer' },
+        { label: 'Total', numeric: true },
+      ],
+      rows: orders.map(([orderId, customer, total]) => [
+        { text: orderId },
+        { text: customer },
+        { text: formatValue(total, 'currency', { locale, currency }) },
+      ]),
+      footer: 'Showing 4 of 412 orders',
+    };
+  },
   reviews: () => emptyWidget('No new reviews this week.'),
   [ERROR_DEMO_KEY]: () => {
     throw new Error('Simulated failure: upstream analytics API returned 503.');
