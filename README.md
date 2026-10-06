@@ -1,9 +1,11 @@
-# Project Title
+# Dashboard Widgets Toolkit Demo
 
 - Author:  Richard McQuiston
 - Website:  https://richardmcquiston.com/
 
 ## Overview
+
+Single Page Application (SPA) demo page demonstrating the features of the dashboard-widgets NPM package.
 
 ## Getting Started
 
