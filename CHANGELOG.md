@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Added
+
+- Tabs (Interactive dashboard, Overview, Payload validation, Use it in your
+  app) with arrow-key navigation and URL hash deep links.
+- Header and tabs in one block that collapses to just the title on scroll and
+  re-expands on hover, focus or tap.
+- Floating jump-to-top button and a copyright footer.
+
+### Removed
+
+- The "Live demo" label above the title.
+
 ### Changed
 
 - Blue brand theme: gradient header banner, tinted page, blue-first chart
