@@ -42,9 +42,11 @@ four tabs (deep-linkable, e.g. `#validation`) under a header that collapses to
 just the title as you scroll (hover, focus or tap the chevron to expand it),
 a floating jump-to-top button and a copyright footer:
 
-- **Interactive dashboard** tab: all seven widget kinds, an empty state and a
-  failing provider, resolved with `resolveWidgets`. Move, hide and minimise
+- **Interactive dashboard** tab: all seven widget kinds, an empty state, resolved with `resolveWidgets`. Move, hide and minimise
   cards; the layout persists in `localStorage`.
+- **Error demo** toggle (off by default): adds a widget whose provider
+  intentionally throws, showing that one failure stays on its own card with a
+  Retry button.
 - **Locale switcher**: formats numbers and currency per locale.
 - **Fill rows**: stretches cards to equal height per row and packs them
   densely. The toolkit grid aligns cards to the start, so this is a few lines

@@ -14,6 +14,9 @@ export interface ShopContext extends WidgetContext {
   readonly refreshCount: number;
 }
 
+/** Key of the widget whose provider intentionally fails. */
+export const ERROR_DEMO_KEY = 'flaky';
+
 export const widgetDefinitions: readonly WidgetDefinition[] = [
   defineWidget({
     key: 'revenue',
@@ -79,9 +82,10 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 100,
   }),
   defineWidget({
-    key: 'flaky',
-    title: 'Flaky provider',
-    description: 'Always throws, to show per-widget error handling.',
+    key: ERROR_DEMO_KEY,
+    title: 'Error handling demo',
+    description:
+      'Intentional: this provider always throws, so you can see one failing widget reported on its own card while the rest of the dashboard keeps working.',
     kind: 'KPI',
     sortOrder: 110,
   }),
@@ -227,7 +231,7 @@ export const widgetProviders: WidgetProviders<ShopContext> = {
     footer: 'Showing 4 of 412 orders',
   }),
   reviews: () => emptyWidget('No new reviews this week.'),
-  flaky: () => {
-    throw new Error('Upstream analytics API returned 503 (demo failure).');
+  [ERROR_DEMO_KEY]: () => {
+    throw new Error('Simulated failure: upstream analytics API returned 503.');
   },
 };

@@ -88,3 +88,8 @@ body {
   --donate-link: #ffb347;
   --donate-link-hover: #ffc978;
 }
+
+/* Match the error message to the card body text size. */
+.dwt-error-message {
+  font-size: 0.875rem;
+}

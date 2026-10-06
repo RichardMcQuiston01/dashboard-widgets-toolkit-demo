@@ -6,12 +6,19 @@ import {
   EMPTY_LAYOUT,
   type DashboardLayout,
   type DashboardWidget,
+  type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
   Dashboard,
   WidgetSettingsProvider,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactElement,
+} from 'react';
 
 import { BackToTop } from './components/BackToTop';
 import { CollapsingHeader } from './components/CollapsingHeader';
@@ -22,6 +29,7 @@ import { Playground } from './components/Playground';
 import { Section } from './components/Section';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import {
+  ERROR_DEMO_KEY,
   widgetDefinitions,
   widgetProviders,
   type ShopContext,
@@ -84,9 +92,17 @@ export function App(): ReactElement {
   const [layout, setLayout] = useState<DashboardLayout>(readStoredLayout);
   const [activeTab, setActiveTab] = useState<string>(readTabFromHash);
   const [isFilled, setIsFilled] = useState<boolean>(true);
+  const [showErrorDemo, setShowErrorDemo] = useState<boolean>(false);
   const [refreshCount, setRefreshCount] = useState<number>(0);
+  const activeDefinitions: readonly WidgetDefinition[] = useMemo(
+    () =>
+      showErrorDemo
+        ? widgetDefinitions
+        : widgetDefinitions.filter(({ key }) => key !== ERROR_DEMO_KEY),
+    [showErrorDemo]
+  );
   const [widgets, setWidgets] = useState<readonly DashboardWidget[]>(() =>
-    loadingWidgets(widgetDefinitions)
+    loadingWidgets(activeDefinitions)
   );
 
   const localeOption: LocaleOption = LOCALES[localeIndex] ?? LOCALES[0]!;
@@ -95,7 +111,9 @@ export function App(): ReactElement {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const loadWidgets = useCallback(async (): Promise<void> => {
+  const loadWidgets = useCallback(async (): Promise<
+    readonly DashboardWidget[]
+  > => {
     const context: ShopContext = {
       shopName: 'Demo Shop',
       currency: localeOption.currency,
@@ -103,14 +121,24 @@ export function App(): ReactElement {
     };
     // Simulate network latency so the loading placeholders are visible.
     await new Promise<void>((resolve) => setTimeout(resolve, 600));
-    setWidgets(
-      await resolveWidgets(widgetDefinitions, widgetProviders, context)
-    );
-  }, [localeOption.currency, refreshCount]);
+    return resolveWidgets(activeDefinitions, widgetProviders, context);
+  }, [activeDefinitions, localeOption.currency, refreshCount]);
 
   useEffect(() => {
-    void loadWidgets();
-  }, [loadWidgets]);
+    // Ignore results from a superseded load (for example after a toggle).
+    let isCancelled = false;
+    setWidgets(loadingWidgets(activeDefinitions));
+    loadWidgets()
+      .then((resolved) => {
+        if (!isCancelled) setWidgets(resolved);
+      })
+      .catch((error: unknown) => {
+        console.error('Could not resolve the dashboard widgets.', error);
+      });
+    return () => {
+      isCancelled = true;
+    };
+  }, [loadWidgets, activeDefinitions]);
 
   function handleTabChange(tabId: string): void {
     setActiveTab(tabId);
@@ -126,7 +154,6 @@ export function App(): ReactElement {
   }, []);
 
   function handleRefresh(): void {
-    setWidgets(loadingWidgets(widgetDefinitions));
     setRefreshCount((count) => count + 1);
   }
 
@@ -150,7 +177,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds, plus an empty state and a provider that throws. Use each card's buttons to move, hide or minimise widgets; the layout is saved in this browser's localStorage."
+          description="All seven widget kinds plus an empty state. Switch on “Error demo” to add a widget whose provider intentionally fails and see how failures stay contained to one card. Use each card's buttons to move, hide or minimise widgets; the layout is saved in this browser's localStorage."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 text-sm">
@@ -180,6 +207,14 @@ export function App(): ReactElement {
               onClick={handleResetLayout}
             >
               Reset layout
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              aria-pressed={showErrorDemo}
+              onClick={() => setShowErrorDemo((current) => !current)}
+            >
+              Error demo: {showErrorDemo ? 'on' : 'off'}
             </button>
             <button
               type="button"
