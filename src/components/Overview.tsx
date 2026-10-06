@@ -30,7 +30,7 @@ const WIDGET_KINDS: readonly WidgetKindInfo[] = [
 const FEATURES: readonly string[] = [
   'Typed widget definitions and plain-JSON payloads, validated with field-level error messages.',
   'One failing provider never breaks the dashboard; it renders as an error card with a retry.',
-  'Per-viewer layout (order, hide, minimise) with pure functions you persist wherever you like.',
+  'Per-viewer layout (order, hide, minimize) with pure functions you persist wherever you like.',
   'Intl-based formatting for numbers, currency and percent, with KPI deltas.',
   'Accessible renderers: charts have a title, description, keyboard tooltip and "View as table".',
   'Unstyled by default; theme with --dwt-* custom properties or your own (Tailwind) classes.',

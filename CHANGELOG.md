@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.4.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.4.0`.
+- The dashboard loads with `useWidgets`: placeholders first, then each card
+  fills in as its own provider resolves (staggered fake latency per widget),
+  replacing the single `resolveWidgets` call.
+- Widgets set a 12-column `width` (KPI tiles 3, charts 6, products table 8,
+  and so on), fixing cramped tables.
+- New "Most popular products" widget; "Most popular products", "Orders by
+  country" and "Recent orders" have a detail view (eye button) with search,
+  filters, sorting and paging.
+- American English text ("minimize").
+- Works around Tailwind's preflight margin reset un-centering the detail
+  dialog (`margin: auto` in `src/index.css`).
+
 ### Fixed
 
 - The locale switcher now changes the currency symbol everywhere: the KPI and
