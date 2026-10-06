@@ -418,7 +418,7 @@ export async function loadWidgetDetail(
   key: string,
   { currency, locale }: Pick<ShopContext, 'currency' | 'locale'>,
   signal: AbortSignal
-): Promise<DetailData> {
+): Promise<DetailData | undefined> {
   await delay(500, signal);
   const money = (amount: number): string =>
     formatValue(amount, 'currency', { locale, currency });
@@ -468,6 +468,7 @@ export async function loadWidgetDetail(
         ]),
       };
     default:
-      throw new Error(`The demo has no detail data for widget "${key}".`);
+      // No extra data: a complete TABLE or BAR_LIST shows its own card data.
+      return undefined;
   }
 }

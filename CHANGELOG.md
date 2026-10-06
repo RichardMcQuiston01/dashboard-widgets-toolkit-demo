@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Changed (toolkit 0.4.1)
+### Changed (toolkit 0.5.0)
 
-- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.4.1`.
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.5.0`.
 - The dashboard loads with `useWidgets`: placeholders first, then each card
   fills in as its own provider resolves (staggered fake latency per widget),
   replacing the single `resolveWidgets` call.
@@ -13,6 +13,8 @@
 - New "Most popular products" widget; "Most popular products", "Orders by
   country" and "Recent orders" have a detail view (eye button) with search,
   filters, sorting and paging.
+- `loadDetail` returns `undefined` for widgets it has no extra data for, so a
+  complete table or bar list falls back to its own card data (toolkit 0.5.0).
 - American English text ("minimize").
 - The detail dialog stays centered under Tailwind's preflight margin reset
   (fixed in toolkit 0.4.1, so no CSS workaround is needed).
