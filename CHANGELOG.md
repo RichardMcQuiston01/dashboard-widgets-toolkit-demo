@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Changed (toolkit 0.4.0)
+### Changed (toolkit 0.4.1)
 
-- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.4.0`.
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.4.1`.
 - The dashboard loads with `useWidgets`: placeholders first, then each card
   fills in as its own provider resolves (staggered fake latency per widget),
   replacing the single `resolveWidgets` call.
@@ -14,8 +14,8 @@
   country" and "Recent orders" have a detail view (eye button) with search,
   filters, sorting and paging.
 - American English text ("minimize").
-- Works around Tailwind's preflight margin reset un-centering the detail
-  dialog (`margin: auto` in `src/index.css`).
+- The detail dialog stays centered under Tailwind's preflight margin reset
+  (fixed in toolkit 0.4.1, so no CSS workaround is needed).
 
 ### Fixed
 

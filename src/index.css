@@ -83,12 +83,3 @@ body {
 .dwt-error-message {
   font-size: 0.875rem;
 }
-
-/*
- * Tailwind's preflight zeroes every element's margin, which un-centers the
- * toolkit's native detail <dialog> (it relies on the browser's `margin: auto`).
- * Fixed in the toolkit after 0.4.0; this keeps the demo correct meanwhile.
- */
-.dwt-detail-dialog {
-  margin: auto;
-}
