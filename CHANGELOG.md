@@ -4,6 +4,9 @@
 
 ### Changed (toolkit 0.5.0)
 
+- README screenshots refreshed (light and dark) to show the 12-column layout and
+  the new products table, with the floating donate card hidden.
+
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.5.0`.
 - The dashboard loads with `useWidgets`: placeholders first, then each card
   fills in as its own provider resolves (staggered fake latency per widget),
