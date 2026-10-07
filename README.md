@@ -15,7 +15,7 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
       <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot-dark.png" />
       <img
         src="./docs/screenshot-light.png"
-        alt="The demo's interactive dashboard: a blue header with tabs, then KPI, gauge, text and bar-chart widgets laid out in a grid with equal-height cards."
+        alt="The demo's interactive dashboard: a blue header with tabs, KPI, gauge and text tiles, two charts, then a wide products table beside a country bar list, laid out on a 12-column grid."
         width="900"
       />
     </picture>
