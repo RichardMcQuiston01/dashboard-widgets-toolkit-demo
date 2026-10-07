@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.6.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.6.0`.
+- "Most popular products" and "Recent orders" set `tableControls: true`, so
+  their cards have a search box and sortable headers. They search the rows the
+  card shows; the eye button still opens the full list.
+
 ### Changed (toolkit 0.5.0)
 
 - README screenshots refreshed (light and dark) to show the 12-column layout and
