@@ -80,6 +80,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 65,
     width: 8,
     detail: { pageSize: 10 },
+    tableControls: true,
   }),
   defineWidget({
     key: 'countries',
@@ -106,6 +107,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 90,
     width: 6,
     detail: { title: 'All orders', pageSize: 10 },
+    tableControls: true,
   }),
   defineWidget({
     key: 'reviews',
