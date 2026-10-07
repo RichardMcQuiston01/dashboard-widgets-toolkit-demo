@@ -65,6 +65,9 @@ a floating jump-to-top button and a copyright footer:
   country" and "Recent orders" opens a dialog with search, column filters,
   sortable headers and paging. The demo's `loadDetail` returns the full rows;
   a real app would query its database there.
+- **Table controls**: "Most popular products" and "Recent orders" set
+  `tableControls: true`, giving the card itself a search box and sortable
+  headers over the rows it shows (the eye button opens the full list).
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
