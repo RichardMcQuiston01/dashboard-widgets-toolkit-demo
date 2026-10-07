@@ -1,16 +1,15 @@
 import {
-  loadingWidgets,
   parseLayout,
-  resolveWidgets,
   serializeLayout,
   EMPTY_LAYOUT,
   type DashboardLayout,
-  type DashboardWidget,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
   Dashboard,
   WidgetSettingsProvider,
+  useWidgets,
+  type DetailLoader,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import {
   useCallback,
@@ -30,6 +29,7 @@ import { Section } from './components/Section';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import {
   ERROR_DEMO_KEY,
+  loadWidgetDetail,
   widgetDefinitions,
   widgetProviders,
   type ShopContext,
@@ -102,50 +102,35 @@ export function App(): ReactElement {
         .map(({ fill, ...rest }) => (isFilled ? { ...rest, fill } : rest)),
     [isFilled, showErrorDemo]
   );
-  const [widgets, setWidgets] = useState<readonly DashboardWidget[]>(() =>
-    loadingWidgets(activeDefinitions)
-  );
-
   const localeOption: LocaleOption = LOCALES[localeIndex] ?? LOCALES[0]!;
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const loadWidgets = useCallback(async (): Promise<
-    readonly DashboardWidget[]
-  > => {
-    const context: ShopContext = {
+  // Keep the context stable: a new value restarts loading. Each widget then
+  // loads independently after the first render, so cards fill in one by one.
+  const shopContext: ShopContext = useMemo(
+    () => ({
       shopName: 'Demo Shop',
       currency: localeOption.currency,
       locale: localeOption.locale,
       refreshCount,
-    };
-    // Simulate network latency so the loading placeholders are visible.
-    await new Promise<void>((resolve) => setTimeout(resolve, 600));
-    return resolveWidgets(activeDefinitions, widgetProviders, context);
-  }, [
+    }),
+    [localeOption.currency, localeOption.locale, refreshCount]
+  );
+  const { widgets, refresh } = useWidgets(
     activeDefinitions,
-    localeOption.currency,
-    localeOption.locale,
-    refreshCount,
-  ]);
+    widgetProviders,
+    shopContext
+  );
 
-  useEffect(() => {
-    // Ignore results from a superseded load (for example after a toggle).
-    let isCancelled = false;
-    setWidgets(loadingWidgets(activeDefinitions));
-    loadWidgets()
-      .then((resolved) => {
-        if (!isCancelled) setWidgets(resolved);
-      })
-      .catch((error: unknown) => {
-        console.error('Could not resolve the dashboard widgets.', error);
-      });
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadWidgets, activeDefinitions]);
+  // The data behind each card's "View" button, loaded only when it is opened.
+  const loadDetail: DetailLoader = useCallback(
+    (definition, { signal }) =>
+      loadWidgetDetail(definition.key, localeOption, signal),
+    [localeOption]
+  );
 
   function handleTabChange(tabId: string): void {
     setActiveTab(tabId);
@@ -184,7 +169,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state. Switch on “Error demo” to add a widget whose provider intentionally fails and see how failures stay contained to one card. Use each card's buttons to move, hide or minimise widgets; the layout is saved in this browser's localStorage."
+          description="All seven widget kinds plus an empty state. Switch on “Error demo” to add a widget whose provider intentionally fails and see how failures stay contained to one card. Use each card's buttons to move, hide or minimize widgets, and the eye button to open a sortable, filterable list; the layout is saved in this browser's localStorage. Each card loads on its own, so they fill in one by one."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 text-sm">
@@ -249,7 +234,8 @@ export function App(): ReactElement {
               widgets={widgets}
               layout={layout}
               onLayoutChange={handleLayoutChange}
-              onRetry={handleRefresh}
+              onRetry={refresh}
+              loadDetail={loadDetail}
             />
           </WidgetSettingsProvider>
         </Section>

@@ -55,8 +55,16 @@ in view while the description and links fold away as you scroll,
 a floating jump-to-top button and a copyright footer:
 
 - **Interactive dashboard** tab: all seven widget kinds plus an empty state,
-  resolved with `resolveWidgets`. Move, hide and minimise cards; the layout
-  persists in `localStorage`.
+  loaded with the `useWidgets` hook so each card fills in on its own as its
+  data arrives (the demo gives every provider a different fake latency).
+  Move, hide and minimize cards (minimized cards wait in a "Minimized:" bar);
+  the layout persists in `localStorage`.
+- **Widget widths** on a 12-column grid: each definition sets `width` (for
+  example 3 for the KPI tiles, 6 for charts, 8 for the products table).
+- **Detail view**: the eye button on "Most popular products", "Orders by
+  country" and "Recent orders" opens a dialog with search, column filters,
+  sortable headers and paging. The demo's `loadDetail` returns the full rows;
+  a real app would query its database there.
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
