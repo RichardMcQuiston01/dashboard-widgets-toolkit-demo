@@ -2,8 +2,10 @@ import {
   defineWidget,
   emptyWidget,
   formatValue,
+  type DetailData,
   type WidgetContext,
   type WidgetDefinition,
+  type WidgetProvider,
   type WidgetProviders,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 
@@ -27,6 +29,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'KPI',
     fill: 'both',
     sortOrder: 10,
+    width: 3,
   }),
   defineWidget({
     key: 'refunds',
@@ -34,6 +37,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'KPI',
     fill: 'both',
     sortOrder: 20,
+    width: 3,
   }),
   defineWidget({
     key: 'storage',
@@ -41,6 +45,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'GAUGE',
     fill: 'both',
     sortOrder: 30,
+    width: 3,
   }),
   defineWidget({
     key: 'status',
@@ -48,6 +53,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'TEXT',
     fill: 'both',
     sortOrder: 40,
+    width: 3,
   }),
   defineWidget({
     key: 'monthly',
@@ -55,7 +61,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'GRAPH',
     fill: 'both',
     sortOrder: 50,
-    defaultSize: 'large',
+    width: 6,
   }),
   defineWidget({
     key: 'traffic',
@@ -63,7 +69,17 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'GRAPH',
     fill: 'both',
     sortOrder: 60,
-    defaultSize: 'large',
+    width: 6,
+  }),
+  defineWidget({
+    key: 'top-products',
+    title: 'Most popular products',
+    description: 'By units sold in the last 12 months.',
+    kind: 'TABLE',
+    fill: 'both',
+    sortOrder: 65,
+    width: 8,
+    detail: { pageSize: 10 },
   }),
   defineWidget({
     key: 'countries',
@@ -71,6 +87,8 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'BAR_LIST',
     fill: 'both',
     sortOrder: 70,
+    width: 4,
+    detail: true,
   }),
   defineWidget({
     key: 'low-stock',
@@ -78,6 +96,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'ALERT_LIST',
     fill: 'both',
     sortOrder: 80,
+    width: 3,
   }),
   defineWidget({
     key: 'recent-orders',
@@ -85,7 +104,8 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'TABLE',
     fill: 'both',
     sortOrder: 90,
-    defaultSize: 'large',
+    width: 6,
+    detail: { title: 'All orders', pageSize: 10 },
   }),
   defineWidget({
     key: 'reviews',
@@ -93,6 +113,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'TABLE',
     fill: 'both',
     sortOrder: 100,
+    width: 3,
   }),
   defineWidget({
     key: ERROR_DEMO_KEY,
@@ -102,6 +123,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     kind: 'KPI',
     fill: 'both',
     sortOrder: 110,
+    width: 4,
   }),
 ];
 
@@ -126,7 +148,92 @@ function wobble(seed: number, spread: number): number {
   return (raw - Math.floor(raw) - 0.5) * 2 * spread;
 }
 
-export const widgetProviders: WidgetProviders<ShopContext> = {
+const PRODUCTS: readonly (readonly [string, number, number])[] = [
+  ['Bauble Jig STL File – 2.5" Ornament Engraving Holder', 7, 1.58],
+  ['Cork Batch Engraving Alignment Fixture', 6, 4.07],
+  ['Round Coaster Jig STL File – 3D Print Laser Holder', 6, 1.92],
+  ['Ink Pad Holder for Junk Journal STL – 3D Print Organizer', 5, 3.83],
+  ['Bookmark Laser Engraving Jig STL File', 5, 2.4],
+  ['Cricut Joy Marker Holder – 48 Pen Tiered Organizer', 4, 5.25],
+  ['5 40mm Coin Holder for Batch Engraving', 4, 2.1],
+  ['Pen Blank Rotary Jig', 4, 3.0],
+  ['Keychain Blank Alignment Tray', 3, 1.5],
+  ['Slate Coaster Registration Jig', 3, 2.75],
+  ['Wine Stopper Engraving Cradle', 3, 3.2],
+  ['Ornament Slice Engraving Template', 3, 1.99],
+  ['Dog Tag Batch Fixture', 2, 2.6],
+  ['Cutting Board Engraving Guide', 2, 4.5],
+  ['Business Card Holder Jig', 2, 1.75],
+  ['Tumbler Rotary Support Stand', 2, 6.1],
+  ['Magnet Blank Batch Tray', 2, 1.4],
+  ['Leather Patch Alignment Jig', 2, 2.2],
+  ['Bottle Opener Engraving Holder', 1, 3.3],
+  ['Domino Engraving Fixture', 1, 1.2],
+  ['Playing Card Batch Jig', 1, 2.0],
+  ['Phone Case Engraving Cradle', 1, 3.9],
+  ['Guitar Pick Holder Jig', 1, 1.1],
+  ['Wooden Spoon Engraving Rest', 1, 2.8],
+  ['Luggage Tag Alignment Tray', 1, 1.9],
+  ['Cookie Cutter Template Holder', 1, 2.3],
+  ['Mini Notebook Cover Fixture', 1, 3.1],
+  ['Slate Ornament Registration Jig', 1, 1.6],
+  ['Bag Tag Batch Fixture', 1, 2.4],
+  ['Compact Mirror Engraving Cradle', 1, 2.7],
+];
+
+const ORDER_COUNT = 412;
+
+const COUNTRIES: readonly (readonly [string, number])[] = [
+  ['United States', 188],
+  ['United Kingdom', 76],
+  ['Canada', 52],
+  ['Germany', 38],
+  ['Australia', 24],
+  ['France', 15],
+  ['Netherlands', 11],
+  ['Japan', 8],
+];
+
+const CUSTOMERS: readonly string[] = [
+  'Ada L.',
+  'Grace H.',
+  'Alan T.',
+  'Linus T.',
+  'Margaret H.',
+  'Dennis R.',
+  'Barbara L.',
+  'Ken T.',
+];
+
+/** Fifty-odd deterministic recent orders (newest first). */
+function recentOrders(): readonly (readonly [string, string, number])[] {
+  return Array.from({ length: 52 }, (_, index) => {
+    const customer: string = CUSTOMERS[index % CUSTOMERS.length] ?? 'Guest';
+    const total: number =
+      Math.round((12 + ((index * 37) % 140) + (index % 3) * 0.99) * 100) / 100;
+    return [`#${ORDER_COUNT - index + 629}`, customer, total] as const;
+  });
+}
+
+const baseProviders: WidgetProviders<ShopContext> = {
+  'top-products': ({ currency, locale }) => ({
+    kind: 'TABLE',
+    columns: [
+      { label: '#', numeric: true },
+      { label: 'Product' },
+      { label: 'Sold', numeric: true },
+      { label: 'Revenue', numeric: true },
+    ],
+    rows: PRODUCTS.slice(0, 5).map(([name, sold, price], index) => [
+      { text: String(index + 1) },
+      { text: name },
+      { text: String(sold) },
+      {
+        text: formatValue(sold * price, 'currency', { locale, currency }),
+      },
+    ]),
+    footer: `and ${PRODUCTS.length - 5} more`,
+  }),
   revenue: ({ refreshCount, currency }) => {
     const current: number = 18420 + wobble(refreshCount + 1, 2500);
     return {
@@ -208,14 +315,8 @@ export const widgetProviders: WidgetProviders<ShopContext> = {
   }),
   countries: () => ({
     kind: 'BAR_LIST',
-    total: 412,
-    items: [
-      { label: 'United States', value: 188 },
-      { label: 'United Kingdom', value: 76 },
-      { label: 'Canada', value: 52 },
-      { label: 'Germany', value: 38 },
-      { label: 'Australia', value: 24 },
-    ],
+    total: ORDER_COUNT,
+    items: COUNTRIES.slice(0, 5).map(([label, value]) => ({ label, value })),
   }),
   'low-stock': () => ({
     kind: 'ALERT_LIST',
@@ -231,30 +332,143 @@ export const widgetProviders: WidgetProviders<ShopContext> = {
       { title: 'Brass bookmark', valueLabel: '1 left', detail: 'SKU BKM-BR' },
     ],
   }),
-  'recent-orders': ({ currency, locale }) => {
-    const orders: readonly (readonly [string, string, number])[] = [
-      ['#1042', 'Ada L.', 84],
-      ['#1041', 'Grace H.', 32.5],
-      ['#1040', 'Alan T.', 129.99],
-      ['#1039', 'Linus T.', 18],
-    ];
-    return {
-      kind: 'TABLE',
-      columns: [
-        { label: 'Order' },
-        { label: 'Customer' },
-        { label: 'Total', numeric: true },
-      ],
-      rows: orders.map(([orderId, customer, total]) => [
+  'recent-orders': ({ currency, locale }) => ({
+    kind: 'TABLE',
+    columns: [
+      { label: 'Order' },
+      { label: 'Customer' },
+      { label: 'Total', numeric: true },
+    ],
+    rows: recentOrders()
+      .slice(0, 4)
+      .map(([orderId, customer, total]) => [
         { text: orderId },
         { text: customer },
         { text: formatValue(total, 'currency', { locale, currency }) },
       ]),
-      footer: 'Showing 4 of 412 orders',
-    };
-  },
+    footer: `Showing 4 of ${ORDER_COUNT} orders`,
+  }),
   reviews: () => emptyWidget('No new reviews this week.'),
   [ERROR_DEMO_KEY]: () => {
     throw new Error('Simulated failure: upstream analytics API returned 503.');
   },
 };
+
+/** Pretend network latency per widget, so cards fill in one by one. */
+const LATENCY_MS: Readonly<Record<string, number>> = {
+  revenue: 300,
+  refunds: 450,
+  storage: 600,
+  status: 250,
+  monthly: 900,
+  traffic: 1200,
+  'top-products': 800,
+  countries: 700,
+  'low-stock': 1000,
+  'recent-orders': 1100,
+  reviews: 500,
+  [ERROR_DEMO_KEY]: 1400,
+};
+
+/** Resolves after `milliseconds`, or rejects as soon as `signal` aborts. */
+function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new Error('Loading was canceled.'));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, milliseconds);
+    function onAbort(): void {
+      clearTimeout(timer);
+      reject(new Error('Loading was canceled.'));
+    }
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+function withLatency(
+  providers: WidgetProviders<ShopContext>
+): WidgetProviders<ShopContext> {
+  return Object.fromEntries(
+    Object.entries(providers).map(([key, provider]) => {
+      const slowProvider: WidgetProvider<ShopContext> = async (
+        context,
+        definition,
+        options
+      ) => {
+        await delay(LATENCY_MS[key] ?? 500, options.signal);
+        return provider(context, definition, options);
+      };
+      return [key, slowProvider];
+    })
+  );
+}
+
+export const widgetProviders: WidgetProviders<ShopContext> =
+  withLatency(baseProviders);
+
+/**
+ * The full data behind each "View" button. A real app would query its
+ * database here; the toolkit only asks for the rows.
+ */
+export async function loadWidgetDetail(
+  key: string,
+  { currency, locale }: Pick<ShopContext, 'currency' | 'locale'>,
+  signal: AbortSignal
+): Promise<DetailData | undefined> {
+  await delay(500, signal);
+  const money = (amount: number): string =>
+    formatValue(amount, 'currency', { locale, currency });
+  switch (key) {
+    case 'top-products':
+      return {
+        columns: [
+          { key: 'rank', label: '#', numeric: true },
+          { key: 'product', label: 'Product', filterable: true },
+          { key: 'sold', label: 'Sold', numeric: true },
+          { key: 'revenue', label: 'Revenue', numeric: true },
+        ],
+        rows: PRODUCTS.map(([name, sold, price], index) => [
+          { text: String(index + 1), value: index + 1 },
+          { text: name, value: name },
+          { text: String(sold), value: sold },
+          { text: money(sold * price), value: sold * price },
+        ]),
+      };
+    case 'recent-orders':
+      return {
+        columns: [
+          { key: 'order', label: 'Order' },
+          { key: 'customer', label: 'Customer', filterable: true },
+          { key: 'total', label: 'Total', numeric: true },
+        ],
+        rows: recentOrders().map(([orderId, customer, total]) => [
+          { text: orderId },
+          { text: customer },
+          { text: money(total), value: total },
+        ]),
+      };
+    case 'countries':
+      return {
+        columns: [
+          { key: 'country', label: 'Country', filterable: true },
+          { key: 'orders', label: 'Orders', numeric: true },
+          { key: 'share', label: 'Share', numeric: true },
+        ],
+        rows: COUNTRIES.map(([country, orders]) => [
+          { text: country },
+          { text: String(orders), value: orders },
+          {
+            text: formatValue(orders / ORDER_COUNT, 'percent', { locale }),
+            value: orders / ORDER_COUNT,
+          },
+        ]),
+      };
+    default:
+      // No extra data: a complete TABLE or BAR_LIST shows its own card data.
+      return undefined;
+  }
+}
