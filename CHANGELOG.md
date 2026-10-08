@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.7.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.7.0`, which lets
+  `TABLE` cells carry a sort `value`. The demo's tables don't need it yet.
+
 ### Changed (toolkit 0.6.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.6.0`.
