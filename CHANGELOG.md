@@ -4,6 +4,10 @@
 
 ### Changed
 
+- The toolkit's page controls: **Move to page** is now an icon that opens a
+  small floating menu, Delete page is a trash icon, the cards' edit controls no
+  longer cover their titles, and Escape in the Add page name field removes the
+  page you just added (toolkit 0.11.2).
 - A **Settings** gear button opens a modal with the locale and the "Widget
   options" panel, replacing the always-visible locale select and options
   panel. Escape, the close button or a click on the backdrop closes it.
@@ -11,9 +15,9 @@
   which says what each state does (the old "Customize button: off" looked like
   the controls were switched off).
 
-### Changed (toolkit 0.11.1)
+### Changed (toolkit 0.11.2)
 
-Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.1` and shows
+Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.2` and shows
 everything added since 0.7.0:
 
 - **Locked widgets**: "Sync status" is pinned (`locked: { move: true }`, it can
