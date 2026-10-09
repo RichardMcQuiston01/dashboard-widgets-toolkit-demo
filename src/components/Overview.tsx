@@ -31,6 +31,10 @@ const FEATURES: readonly string[] = [
   'Typed widget definitions and plain-JSON payloads, validated with field-level error messages.',
   'One failing provider never breaks the dashboard; it renders as an error card with a retry.',
   'Per-viewer layout (order, hide, minimize) with pure functions you persist wherever you like.',
+  'Customize / Done edit mode with Reset and Revert, and locked widgets (pinned, or locked against hiding and minimizing) that administrators can override.',
+  'Pages of widgets: a page bar for two or more pages, per-page capacity in rows, moving a widget to another page, and loading only the page in view.',
+  'Declared options with defaults: providers receive the resolved values, only the changed widget reloads, and sort and column choices can be applied client-side.',
+  'Storage adapters and useStoredLayout: bring any store (localStorage here), get debounced saves, other-tab updates and conflict handling.',
   'Intl-based formatting for numbers, currency and percent, with KPI deltas.',
   'Accessible renderers: charts have a title, description, keyboard tooltip and "View as table".',
   'Unstyled by default; theme with --dwt-* custom properties or your own (Tailwind) classes.',
@@ -47,8 +51,8 @@ export function Overview(): ReactElement {
           A framework-agnostic dashboard widget toolkit. The core is
           runtime-neutral (Node, Bun, browsers); the React renderers are an
           optional entry point. The package never fetches or stores anything:
-          you register a provider per widget key and persist each viewer&apos;s
-          layout yourself.
+          you register a provider per widget key and plug in a storage adapter
+          for each viewer&apos;s layout.
         </p>
         <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-700 dark:text-slate-300">
           {FEATURES.map((feature) => (

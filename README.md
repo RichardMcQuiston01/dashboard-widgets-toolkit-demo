@@ -15,7 +15,7 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
       <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot-dark.png" />
       <img
         src="./docs/screenshot-light.png"
-        alt="The demo's interactive dashboard: a blue header with tabs, KPI, gauge and text tiles, two charts, then a wide products table beside a country bar list, laid out on a 12-column grid."
+        alt="The demo's interactive dashboard on its Sales & traffic page: a blue header with tabs, controls for pages, edit mode, locks and errors, a Widget options panel, a Customize button and page bar, then two charts and an orders-by-country bar list on a 12-column grid."
         width="900"
       />
     </picture>
@@ -36,7 +36,7 @@ npm install
 
 The demo uses the published
 [`@richardmcquiston01/dashboard-widgets-toolkit`](https://www.npmjs.com/package/@richardmcquiston01/dashboard-widgets-toolkit)
-package (`^0.2.0`).
+package (`^0.11.0`).
 
 ### Usage
 
@@ -58,7 +58,7 @@ a floating jump-to-top button and a copyright footer:
   loaded with the `useWidgets` hook so each card fills in on its own as its
   data arrives (the demo gives every provider a different fake latency).
   Move, hide and minimize cards (minimized cards wait in a "Minimized:" bar);
-  the layout persists in `localStorage`.
+  the layout persists in `localStorage` through a storage adapter.
 - **Widget widths** on a 12-column grid: each definition sets `width` (for
   example 3 for the KPI tiles, 6 for charts, 8 for the products table).
 - **Detail view**: the eye button on "Most popular products", "Orders by
@@ -81,6 +81,23 @@ a floating jump-to-top button and a copyright footer:
   the default layout (cards only as big as their content).
 - **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
   and a **Refresh** that re-runs the providers.
+- **Customize / Done edit mode**: the move and hide controls show only after
+  pressing Customize, with Reset layout and Revert changes in the toolbar. A
+  toggle returns to the always-on controls.
+- **Locked widgets**: "Sync status" is pinned (it can still be hidden or
+  minimized) and "Store policy" cannot be moved, hidden or minimized. The
+  "Administrator" toggle passes `overrideLocks`.
+- **Pages**: three pages with a page bar (shown for two or more pages). While
+  customizing, add, rename, move and delete pages, and move a widget to another
+  page; the "Pages" toggle switches to a single page.
+- **Declared options**: six widgets declare options with defaults (rows shown,
+  months, period, a text filter, columns, sort). Open "Widget options" to change
+  them: providers receive the resolved values, only the changed widget reloads,
+  and sort and column choices are applied by the toolkit.
+- **Storage adapters**: the layout is saved with `useStoredLayout` over a
+  `localStorage` adapter ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts))
+  with an in-memory fallback; changes made in another tab are offered with a
+  ✓ / X prompt.
 - **Overview** tab: what the toolkit is, its features and widget kinds.
 - **Payload validation** tab, a playground: `validateWidgetData` with
   field-level errors.
