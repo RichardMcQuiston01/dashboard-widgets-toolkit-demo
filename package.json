@@ -15,7 +15,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@richardmcquiston01/dashboard-widgets-toolkit": "^0.11.0",
+    "@richardmcquiston01/dashboard-widgets-toolkit": "^0.11.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

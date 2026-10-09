@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Changed (toolkit 0.11.0)
+### Changed (toolkit 0.11.1)
 
-Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.0` and shows
+Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.1` and shows
 everything added since 0.7.0:
 
 - **Locked widgets**: "Sync status" is pinned (`locked: { move: true }`, it can
