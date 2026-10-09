@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.11.1)
+
+Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.1` and shows
+everything added since 0.7.0:
+
+- **Locked widgets**: "Sync status" is pinned (`locked: { move: true }`, it can
+  still be hidden or minimized) and "Store policy" is fully locked. An
+  "Administrator" toggle passes `overrideLocks`.
+- **Edit mode**: `editMode="toggle"` gives the Customize / Done toolbar with
+  Reset and Revert. A toggle switches back to the always-on controls, and the
+  old "Reset layout" button is gone (the toolbar has Reset).
+- **Pages**: the dashboard starts with three pages (Overview, Sales & traffic,
+  Catalog). While customizing you can add, rename, move and delete pages and
+  move a widget to another page. A "Pages" toggle switches to a single page.
+- **Declared options**: six widgets declare options (rows shown, months,
+  period, filters, a text filter, columns). A "Widget options" panel lets you
+  change them; providers receive the resolved values and only the changed
+  widget reloads. Sort and column options use `apply: 'client'`, and the
+  products table's header starts sorted by its sort option.
+- **Storage adapters**: the layout is saved with `useStoredLayout` and
+  `createLayoutPersistence` over a `localStorage` adapter
+  ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts)) with
+  an in-memory fallback. A status line shows saving and errors, and a change
+  made in another tab is offered with ✓ / X. The old `dwt-demo-layout` key is
+  no longer read.
+
 ### Changed (toolkit 0.7.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.7.0`, which lets
