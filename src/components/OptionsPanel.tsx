@@ -221,10 +221,13 @@ export function OptionsPanel({
     (definition) => (definition.options?.length ?? 0) > 0
   );
   return (
-    <details className="mb-4 rounded-lg border border-brand-200 bg-white p-3 dark:border-brand-800 dark:bg-brand-900">
-      <summary className="cursor-pointer text-sm font-medium">
+    <section aria-labelledby="widget-options-heading">
+      <h3
+        id="widget-options-heading"
+        className="text-base font-semibold text-brand-700 dark:text-brand-200"
+      >
         Widget options ({withOptions.length} widgets)
-      </summary>
+      </h3>
       <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
         Each widget declares its options with defaults. The provider receives
         the resolved values (rows shown, period, filters); sorting and column
@@ -270,6 +273,6 @@ export function OptionsPanel({
       >
         Reset options to defaults
       </button>
-    </details>
+    </section>
   );
 }
