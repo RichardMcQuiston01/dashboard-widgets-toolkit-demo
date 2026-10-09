@@ -1,15 +1,14 @@
 import {
-  parseLayout,
-  serializeLayout,
   EMPTY_LAYOUT,
-  type DashboardLayout,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
   Dashboard,
   WidgetSettingsProvider,
+  useStoredLayout,
   useWidgets,
   type DetailLoader,
+  type UseStoredLayoutResult,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import {
   useCallback,
@@ -23,10 +22,12 @@ import { BackToTop } from './components/BackToTop';
 import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
 import { Footer } from './components/Footer';
+import { OptionsPanel, type ChosenOptions } from './components/OptionsPanel';
 import { Overview } from './components/Overview';
 import { Playground } from './components/Playground';
 import { Section } from './components/Section';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
+import { LAYOUT_SCOPE, PAGED_LAYOUT, layoutPersistence } from './data/layouts';
 import {
   ERROR_DEMO_KEY,
   loadWidgetDetail,
@@ -50,21 +51,26 @@ const LOCALES: readonly LocaleOption[] = [
   { label: 'Japanese · JPY', locale: 'ja-JP', currency: 'JPY' },
 ];
 
-const LAYOUT_STORAGE_KEY = 'dwt-demo-layout';
+const OPTIONS_STORAGE_KEY = 'dwt-demo-options';
 
-function readStoredLayout(): DashboardLayout {
+/** Viewer-chosen widget options, kept in this browser only. */
+function readStoredOptions(): ChosenOptions {
   try {
-    return parseLayout(window.localStorage.getItem(LAYOUT_STORAGE_KEY));
+    const raw: string | null = window.localStorage.getItem(OPTIONS_STORAGE_KEY);
+    const parsed: unknown = raw === null ? {} : JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null
+      ? (parsed as ChosenOptions)
+      : {};
   } catch {
-    return EMPTY_LAYOUT;
+    return {};
   }
 }
 
-function storeLayout(layout: DashboardLayout): void {
+function storeOptions(chosen: ChosenOptions): void {
   try {
-    window.localStorage.setItem(LAYOUT_STORAGE_KEY, serializeLayout(layout));
+    window.localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(chosen));
   } catch (error: unknown) {
-    console.warn('Could not save the dashboard layout to localStorage.', error);
+    console.warn('Could not save the widget options to localStorage.', error);
   }
 }
 
@@ -86,10 +92,92 @@ function readTabFromHash(): string {
   return TAB_IDS.includes(hashValue) ? hashValue : 'dashboard';
 }
 
+const noticeButtonClass: string =
+  'rounded-md border border-brand-200 bg-white px-2 py-0.5 text-sm font-medium text-brand-700 hover:bg-brand-50 dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100 dark:hover:bg-brand-800';
+
+const STATUS_TEXT: Readonly<Record<UseStoredLayoutResult['status'], string>> = {
+  loading: 'Loading your layout…',
+  ready: 'Layout saved in this browser.',
+  saving: 'Saving your layout…',
+  error: 'Layout not saved.',
+  conflict: 'Layout changed elsewhere.',
+};
+
+/** Shows what useStoredLayout reports: status, errors and other-tab changes. */
+function StorageNotice({
+  stored,
+}: {
+  readonly stored: UseStoredLayoutResult;
+}): ReactElement {
+  return (
+    <div className="mb-4 space-y-2 text-sm" role="status" aria-live="polite">
+      <p className="text-slate-600 dark:text-slate-400">
+        {STATUS_TEXT[stored.status]}
+        {stored.error !== null && (
+          <span className="ml-1 text-rose-700 dark:text-rose-300">
+            {stored.error} The dashboard keeps working with the layout in
+            memory.
+          </span>
+        )}
+      </p>
+      {stored.remoteLayout !== null && (
+        <p className="flex flex-wrap items-center gap-2">
+          Layout changed in another tab. Use that version?
+          <button
+            type="button"
+            className={noticeButtonClass}
+            aria-label="Use the other tab's layout"
+            onClick={() => stored.resolveRemote('use')}
+          >
+            ✓
+          </button>
+          <button
+            type="button"
+            className={noticeButtonClass}
+            aria-label="Keep this tab's layout"
+            onClick={() => stored.resolveRemote('ignore')}
+          >
+            X
+          </button>
+        </p>
+      )}
+      {stored.conflict !== null && (
+        <p className="flex flex-wrap items-center gap-2">
+          Someone else saved a different layout. Keep yours?
+          <button
+            type="button"
+            className={noticeButtonClass}
+            onClick={() => stored.resolveConflict('mine')}
+          >
+            Keep mine
+          </button>
+          <button
+            type="button"
+            className={noticeButtonClass}
+            onClick={() => stored.resolveConflict('theirs')}
+          >
+            Use theirs
+          </button>
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function App(): ReactElement {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [localeIndex, setLocaleIndex] = useState<number>(0);
-  const [layout, setLayout] = useState<DashboardLayout>(readStoredLayout);
+  const [chosenOptions, setChosenOptions] =
+    useState<ChosenOptions>(readStoredOptions);
+  const [editMode, setEditMode] = useState<'toggle' | 'always'>('toggle');
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const stored: UseStoredLayoutResult = useStoredLayout({
+    persistence: layoutPersistence,
+    scope: LAYOUT_SCOPE,
+    definitions: widgetDefinitions,
+    defaultLayout: PAGED_LAYOUT,
+  });
+  const hasPages: boolean = (stored.layout.pages?.length ?? 0) > 1;
   const [activeTab, setActiveTab] = useState<string>(readTabFromHash);
   const [isFilled, setIsFilled] = useState<boolean>(true);
   const [showErrorDemo, setShowErrorDemo] = useState<boolean>(false);
@@ -122,7 +210,8 @@ export function App(): ReactElement {
   const { widgets, refresh } = useWidgets(
     activeDefinitions,
     widgetProviders,
-    shopContext
+    shopContext,
+    { optionValues: chosenOptions }
   );
 
   // The data behind each card's "View" button, loaded only when it is opened.
@@ -149,13 +238,28 @@ export function App(): ReactElement {
     setRefreshCount((count) => count + 1);
   }
 
-  function handleLayoutChange(next: DashboardLayout): void {
-    setLayout(next);
-    storeLayout(next);
+  function handleOptionChange(
+    widgetKey: string,
+    optionKey: string,
+    value: unknown
+  ): void {
+    setChosenOptions((current) => {
+      const next: ChosenOptions = {
+        ...current,
+        [widgetKey]: { ...current[widgetKey], [optionKey]: value },
+      };
+      storeOptions(next);
+      return next;
+    });
   }
 
-  function handleResetLayout(): void {
-    handleLayoutChange(EMPTY_LAYOUT);
+  function handleResetOptions(): void {
+    setChosenOptions({});
+    storeOptions({});
+  }
+
+  function handleTogglePages(): void {
+    stored.setLayout(hasPages ? EMPTY_LAYOUT : PAGED_LAYOUT);
   }
 
   const buttonClass: string =
@@ -169,7 +273,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state. Switch on “Error demo” to add a widget whose provider intentionally fails and see how failures stay contained to one card. Use each card's buttons to move, hide or minimize widgets, and the eye button to open a sortable, filterable list; the layout is saved in this browser's localStorage. Each card loads on its own, so they fill in one by one."
+          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. The eye button opens a sortable, filterable list. Open “Widget options” to change what a widget asks its provider for. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 text-sm">
@@ -196,9 +300,30 @@ export function App(): ReactElement {
             <button
               type="button"
               className={buttonClass}
-              onClick={handleResetLayout}
+              aria-pressed={hasPages}
+              onClick={handleTogglePages}
             >
-              Reset layout
+              Pages: {hasPages ? 'on' : 'off'}
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              aria-pressed={editMode === 'toggle'}
+              onClick={() =>
+                setEditMode((current) =>
+                  current === 'toggle' ? 'always' : 'toggle'
+                )
+              }
+            >
+              Customize button: {editMode === 'toggle' ? 'on' : 'off'}
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              aria-pressed={isAdmin}
+              onClick={() => setIsAdmin((current) => !current)}
+            >
+              Administrator: {isAdmin ? 'on' : 'off'}
             </button>
             <button
               type="button"
@@ -226,14 +351,24 @@ export function App(): ReactElement {
               Theme: {theme}
             </button>
           </div>
+          <StorageNotice stored={stored} />
+          <OptionsPanel
+            definitions={activeDefinitions}
+            chosen={chosenOptions}
+            onChange={handleOptionChange}
+            onReset={handleResetOptions}
+          />
           <WidgetSettingsProvider
             locale={localeOption.locale}
             linkTarget="_blank"
           >
             <Dashboard
               widgets={widgets}
-              layout={layout}
-              onLayoutChange={handleLayoutChange}
+              layout={stored.layout}
+              onLayoutChange={stored.setLayout}
+              defaultLayout={PAGED_LAYOUT}
+              editMode={editMode}
+              overrideLocks={isAdmin}
               onRetry={refresh}
               loadDetail={loadDetail}
             />
@@ -262,14 +397,49 @@ export function App(): ReactElement {
         <Section
           id="usage"
           title="Use it in your app"
-          description="Install the package, define widgets, register a provider per key, and render."
+          description="Install the package, define widgets, register a provider per key, store the layout and render."
         >
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, resolveWidgets } from '@richardmcquiston01/dashboard-widgets-toolkit';
-import { Dashboard } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
+import { defineWidget, createLayoutPersistence } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
+          </pre>
+          <h3 className="mt-6 text-lg font-semibold text-brand-700 dark:text-brand-200">
+            Declare options, lock a widget, store the layout
+          </h3>
+          <pre className="mt-2 overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
+            <code>{`const topProducts = defineWidget({
+  key: 'top-products',
+  title: 'Most popular products',
+  kind: 'TABLE',
+  locked: { move: true }, // pinned; still hideable
+  options: [
+    { key: 'limit', type: 'number', label: 'Rows', min: 3, max: 10, default: 5 },
+    { key: 'order', type: 'sort', label: 'Order by', apply: 'client',
+      columns: [{ key: 'c2', label: 'Sold' }], default: 'c2:desc' },
+  ],
+});
+
+// Providers get the resolved options; only changed widgets reload.
+const providers = {
+  'top-products': (context, definition, { options }) => load(options.limit),
+};
+const { widgets } = useWidgets(definitions, providers, context, {
+  optionValues, // { 'top-products': { limit: 7 } }
+});
+
+// Bring your own storage: an adapter has get, set, remove and subscribe.
+const persistence = createLayoutPersistence(withFallback(localStorageAdapter, memoryAdapter()));
+const stored = useStoredLayout({ persistence, scope, definitions, defaultLayout });
+
+<Dashboard
+  widgets={widgets}
+  layout={stored.layout}
+  onLayoutChange={stored.setLayout}
+  editMode="toggle"
+/>`}</code>
           </pre>
         </Section>
       ),

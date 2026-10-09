@@ -50,10 +50,23 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   defineWidget({
     key: 'status',
     title: 'Sync status',
+    description:
+      'Locked in place: viewers can hide or minimize it, not move it.',
     kind: 'TEXT',
     fill: 'both',
     sortOrder: 40,
     width: 3,
+    locked: { move: true },
+  }),
+  defineWidget({
+    key: 'policy',
+    title: 'Store policy',
+    description: 'Fully locked: it cannot be moved, hidden or minimized.',
+    kind: 'TEXT',
+    fill: 'both',
+    sortOrder: 45,
+    width: 12,
+    locked: true,
   }),
   defineWidget({
     key: 'monthly',
@@ -62,6 +75,19 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 50,
     width: 6,
+    options: [
+      {
+        key: 'months',
+        type: 'choice',
+        label: 'Months shown',
+        choices: [
+          { value: '4', label: 'Last 4' },
+          { value: '6', label: 'Last 6' },
+          { value: '8', label: 'Last 8' },
+        ],
+        default: '8',
+      },
+    ],
   }),
   defineWidget({
     key: 'traffic',
@@ -70,6 +96,19 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 60,
     width: 6,
+    options: [
+      {
+        key: 'period',
+        type: 'dateRange',
+        label: 'Period',
+        presets: [
+          { value: 'last7', label: 'Last 7 days' },
+          { value: 'last30', label: 'Last 30 days' },
+          { value: 'thisMonth', label: 'This month' },
+        ],
+        default: 'last7',
+      },
+    ],
   }),
   defineWidget({
     key: 'top-products',
@@ -81,6 +120,28 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     width: 8,
     detail: { pageSize: 10 },
     tableControls: true,
+    options: [
+      {
+        key: 'limit',
+        type: 'number',
+        label: 'Rows in the card',
+        min: 3,
+        max: 10,
+        default: 5,
+      },
+      {
+        key: 'order',
+        type: 'sort',
+        label: 'Order by',
+        columns: [
+          { key: 'c1', label: 'Product' },
+          { key: 'c2', label: 'Sold' },
+          { key: 'c3', label: 'Revenue' },
+        ],
+        default: 'c2:desc',
+        apply: 'client',
+      },
+    ],
   }),
   defineWidget({
     key: 'countries',
@@ -90,6 +151,27 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 70,
     width: 4,
     detail: true,
+    options: [
+      {
+        key: 'limit',
+        type: 'number',
+        label: 'Countries shown',
+        min: 3,
+        max: 8,
+        default: 5,
+      },
+      {
+        key: 'order',
+        type: 'sort',
+        label: 'Order by',
+        columns: [
+          { key: 'value', label: 'Orders' },
+          { key: 'label', label: 'Country' },
+        ],
+        default: 'value:desc',
+        apply: 'client',
+      },
+    ],
   }),
   defineWidget({
     key: 'low-stock',
@@ -98,6 +180,14 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 80,
     width: 3,
+    options: [
+      {
+        key: 'criticalOnly',
+        type: 'boolean',
+        label: 'Only items with 2 or fewer left',
+        default: false,
+      },
+    ],
   }),
   defineWidget({
     key: 'recent-orders',
@@ -108,6 +198,27 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     width: 6,
     detail: { title: 'All orders', pageSize: 10 },
     tableControls: true,
+    options: [
+      {
+        key: 'customer',
+        type: 'text',
+        label: 'Customer contains',
+        maxLength: 40,
+        default: '',
+      },
+      {
+        key: 'columns',
+        type: 'columns',
+        label: 'Columns',
+        columns: [
+          { key: 'c0', label: 'Order' },
+          { key: 'c1', label: 'Customer' },
+          { key: 'c2', label: 'Total' },
+        ],
+        default: ['c0', 'c1', 'c2'],
+        apply: 'client',
+      },
+    ],
   }),
   defineWidget({
     key: 'reviews',
@@ -218,24 +329,31 @@ function recentOrders(): readonly (readonly [string, string, number])[] {
 }
 
 const baseProviders: WidgetProviders<ShopContext> = {
-  'top-products': ({ currency, locale }) => ({
-    kind: 'TABLE',
-    columns: [
-      { label: '#', numeric: true },
-      { label: 'Product' },
-      { label: 'Sold', numeric: true },
-      { label: 'Revenue', numeric: true },
-    ],
-    rows: PRODUCTS.slice(0, 5).map(([name, sold, price], index) => [
-      { text: String(index + 1) },
-      { text: name },
-      { text: String(sold) },
-      {
-        text: formatValue(sold * price, 'currency', { locale, currency }),
-      },
-    ]),
-    footer: `and ${PRODUCTS.length - 5} more`,
-  }),
+  'top-products': ({ currency, locale }, _definition, { options }) => {
+    // `limit` is the provider's; `order` is applied by the toolkit, so the
+    // rows carry a sort `value` for the Sold and Revenue columns.
+    const limit: number =
+      typeof options['limit'] === 'number' ? options['limit'] : 5;
+    return {
+      kind: 'TABLE',
+      columns: [
+        { label: '#', numeric: true },
+        { label: 'Product' },
+        { label: 'Sold', numeric: true },
+        { label: 'Revenue', numeric: true },
+      ],
+      rows: PRODUCTS.slice(0, limit).map(([name, sold, price], index) => [
+        { text: String(index + 1), value: index + 1 },
+        { text: name, value: name },
+        { text: String(sold), value: sold },
+        {
+          text: formatValue(sold * price, 'currency', { locale, currency }),
+          value: sold * price,
+        },
+      ]),
+      footer: `and ${PRODUCTS.length - limit} more`,
+    };
+  },
   revenue: ({ refreshCount, currency }) => {
     const current: number = 18420 + wobble(refreshCount + 1, 2500);
     return {
@@ -267,29 +385,38 @@ const baseProviders: WidgetProviders<ShopContext> = {
     value: 'All channels in sync',
     label: shopName,
   }),
-  monthly: ({ refreshCount, currency }) => ({
-    kind: 'GRAPH',
-    chartType: 'bar',
-    valueFormat: 'currency',
-    currency,
-    xLabel: 'Month',
-    series: [
-      {
-        name: 'Revenue',
-        points: MONTHS.slice(0, 8).map((label, index) => ({
-          label,
-          value: Math.round(
-            9000 + index * 1100 + wobble(index + refreshCount, 1500)
-          ),
-        })),
-      },
-    ],
+  policy: () => ({
+    kind: 'TEXT',
+    value: '30-day returns',
+    label: 'Set by the store owner',
   }),
-  traffic: ({ refreshCount }) => ({
+  monthly: ({ refreshCount, currency }, _definition, { options }) => {
+    const months: number = Number(options['months'] ?? 8);
+    return {
+      kind: 'GRAPH',
+      chartType: 'bar',
+      valueFormat: 'currency',
+      currency,
+      xLabel: 'Month',
+      series: [
+        {
+          name: 'Revenue',
+          points: MONTHS.slice(0, months).map((label, index) => ({
+            label,
+            value: Math.round(
+              9000 + index * 1100 + wobble(index + refreshCount, 1500)
+            ),
+          })),
+        },
+      ],
+    };
+  },
+  traffic: ({ refreshCount }, _definition, { options }) => ({
     kind: 'GRAPH',
     chartType: 'line',
     valueFormat: 'number',
-    xLabel: 'Day',
+    // The provider always receives the date range as an interval.
+    xLabel: `Day (${String(options['period'] ?? '')})`,
     series: [
       {
         name: 'Views',
@@ -315,41 +442,56 @@ const baseProviders: WidgetProviders<ShopContext> = {
       },
     ],
   }),
-  countries: () => ({
+  countries: (_context, _definition, { options }) => ({
     kind: 'BAR_LIST',
     total: ORDER_COUNT,
-    items: COUNTRIES.slice(0, 5).map(([label, value]) => ({ label, value })),
+    items: COUNTRIES.slice(0, Number(options['limit'] ?? 5)).map(
+      ([label, value]) => ({ label, value })
+    ),
   }),
-  'low-stock': () => ({
-    kind: 'ALERT_LIST',
-    total: 7,
-    emptyText: 'Nothing low on stock.',
-    items: [
-      {
-        title: 'Ceramic mug, blue',
-        valueLabel: '2 left',
-        detail: 'SKU MUG-BL',
-      },
-      { title: 'Linen tote bag', valueLabel: '3 left', detail: 'SKU TOT-LN' },
-      { title: 'Brass bookmark', valueLabel: '1 left', detail: 'SKU BKM-BR' },
-    ],
-  }),
-  'recent-orders': ({ currency, locale }) => ({
-    kind: 'TABLE',
-    columns: [
-      { label: 'Order' },
-      { label: 'Customer' },
-      { label: 'Total', numeric: true },
-    ],
-    rows: recentOrders()
-      .slice(0, 4)
-      .map(([orderId, customer, total]) => [
+  'low-stock': (_context, _definition, { options }) => {
+    const items = [
+      { title: 'Ceramic mug, blue', left: 2, sku: 'MUG-BL' },
+      { title: 'Linen tote bag', left: 3, sku: 'TOT-LN' },
+      { title: 'Brass bookmark', left: 1, sku: 'BKM-BR' },
+    ].filter((item) => options['criticalOnly'] !== true || item.left <= 2);
+    return {
+      kind: 'ALERT_LIST',
+      total: options['criticalOnly'] === true ? items.length : 7,
+      emptyText: 'Nothing low on stock.',
+      items: items.map((item) => ({
+        title: item.title,
+        valueLabel: `${item.left} left`,
+        detail: `SKU ${item.sku}`,
+      })),
+    };
+  },
+  'recent-orders': ({ currency, locale }, _definition, { options }) => {
+    // `customer` filters here; `columns` is applied by the toolkit.
+    const needle: string = String(options['customer'] ?? '')
+      .trim()
+      .toLowerCase();
+    const matches = recentOrders().filter(([, customer]) =>
+      customer.toLowerCase().includes(needle)
+    );
+    return {
+      kind: 'TABLE',
+      columns: [
+        { label: 'Order' },
+        { label: 'Customer' },
+        { label: 'Total', numeric: true },
+      ],
+      rows: matches.slice(0, 4).map(([orderId, customer, total]) => [
         { text: orderId },
         { text: customer },
-        { text: formatValue(total, 'currency', { locale, currency }) },
+        {
+          text: formatValue(total, 'currency', { locale, currency }),
+          value: total,
+        },
       ]),
-    footer: `Showing 4 of ${ORDER_COUNT} orders`,
-  }),
+      footer: `Showing ${Math.min(4, matches.length)} of ${matches.length} orders`,
+    };
+  },
   reviews: () => emptyWidget('No new reviews this week.'),
   [ERROR_DEMO_KEY]: () => {
     throw new Error('Simulated failure: upstream analytics API returned 503.');
@@ -362,6 +504,7 @@ const LATENCY_MS: Readonly<Record<string, number>> = {
   refunds: 450,
   storage: 600,
   status: 250,
+  policy: 200,
   monthly: 900,
   traffic: 1200,
   'top-products': 800,
