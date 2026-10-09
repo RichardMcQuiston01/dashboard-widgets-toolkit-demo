@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+
+- A **Settings** gear button opens a modal with the locale and the "Widget
+  options" panel, replacing the always-visible locale select and options
+  panel. Escape, the close button or a click on the backdrop closes it.
+- The edit-mode toggle reads "Edit controls: behind Customize / always shown",
+  which says what each state does (the old "Customize button: off" looked like
+  the controls were switched off).
+
 ### Changed (toolkit 0.11.1)
 
 Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.1` and shows

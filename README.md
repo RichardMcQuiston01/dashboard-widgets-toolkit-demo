@@ -15,7 +15,7 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
       <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot-dark.png" />
       <img
         src="./docs/screenshot-light.png"
-        alt="The demo's interactive dashboard on its Sales & traffic page: a blue header with tabs, controls for pages, edit mode, locks and errors, a Widget options panel, a Customize button and page bar, then two charts and an orders-by-country bar list on a 12-column grid."
+        alt="The demo's interactive dashboard on its Sales & traffic page: a blue header with tabs, controls for pages, edit mode, locks and errors, a Settings button, a Customize button and page bar, then two charts and an orders-by-country bar list on a 12-column grid."
         width="900"
       />
     </picture>
@@ -71,7 +71,9 @@ a floating jump-to-top button and a copyright footer:
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
-- **Locale switcher**: formats numbers and currency per locale. Providers
+- **Settings** (gear button): a modal with the locale switcher and the widget
+  options panel.
+- **Locale switcher** (in Settings): formats numbers and currency per locale. Providers
   receive the locale and currency in their context and set `currency` on
   `KPI` and `GRAPH` payloads (the toolkit defaults to USD otherwise).
 - **Fill widgets** toggle: every widget definition in
@@ -91,7 +93,7 @@ a floating jump-to-top button and a copyright footer:
   customizing, add, rename, move and delete pages, and move a widget to another
   page; the "Pages" toggle switches to a single page.
 - **Declared options**: six widgets declare options with defaults (rows shown,
-  months, period, a text filter, columns, sort). Open "Widget options" to change
+  months, period, a text filter, columns, sort). Open Settings (the gear) to change
   them: providers receive the resolved values, only the changed widget reloads,
   and sort and column choices are applied by the toolkit.
 - **Storage adapters**: the layout is saved with `useStoredLayout` over a
