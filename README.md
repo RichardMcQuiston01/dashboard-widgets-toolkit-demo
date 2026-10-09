@@ -36,7 +36,7 @@ npm install
 
 The demo uses the published
 [`@richardmcquiston01/dashboard-widgets-toolkit`](https://www.npmjs.com/package/@richardmcquiston01/dashboard-widgets-toolkit)
-package (`^0.11.1`).
+package (`^0.11.2`).
 
 ### Usage
 
