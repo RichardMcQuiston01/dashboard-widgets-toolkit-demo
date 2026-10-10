@@ -35,34 +35,8 @@ body {
   @apply text-slate-900 dark:text-slate-100;
 }
 
-/* Toolkit theme: blue-first chart palette, tinted surfaces. */
-.dwt-dashboard,
-.dwt-card {
-  --dwt-surface: #ffffff;
-  --dwt-border: rgba(15, 83, 148, 0.16);
-  --dwt-link: #0f5394;
-  --dwt-meter-track: #d9e8f8;
-  --dwt-bar-track: #e4edf8;
-  --dwt-series-1: #0f5394;
-  --dwt-series-2: #f59e0b;
-  --dwt-series-3: #14a38b;
-  --dwt-series-4: #7c5cd6;
-  --dwt-radius: 12px;
-}
-
-:root[data-theme='dark'] .dwt-dashboard,
-:root[data-theme='dark'] .dwt-card {
-  --dwt-surface: #0d1b2e;
-  --dwt-border: rgba(134, 180, 230, 0.2);
-  --dwt-link: #86b4e6;
-  --dwt-meter-track: #123a66;
-  --dwt-bar-track: #1b3150;
-  --dwt-series-1: #4f8fd6;
-  --dwt-series-2: #ffb347;
-  --dwt-series-3: #2dc4aa;
-  --dwt-series-4: #a48cf0;
-}
-
+/* Colors come from the Brand blue theme (src/data/themes.ts, built with
+   createTheme); only non-token styling stays here. */
 .dwt-card {
   border-top: 3px solid var(--dwt-series-1);
   box-shadow:

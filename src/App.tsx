@@ -23,12 +23,21 @@ import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
 import { Footer } from './components/Footer';
 import { OptionsPanel, type ChosenOptions } from './components/OptionsPanel';
+import { ThemePicker } from './components/ThemePicker';
 import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
 import { Playground } from './components/Playground';
 import { Section } from './components/Section';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import { LAYOUT_SCOPE, PAGED_LAYOUT, layoutPersistence } from './data/layouts';
+import {
+  THEME_SCOPE_NAME,
+  buildTheme,
+  readStoredThemeChoice,
+  storeThemeChoice,
+  type BuiltTheme,
+  type ThemeChoice,
+} from './data/themes';
 import {
   ERROR_DEMO_KEY,
   loadWidgetDetail,
@@ -171,6 +180,9 @@ export function App(): ReactElement {
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [chosenOptions, setChosenOptions] =
     useState<ChosenOptions>(readStoredOptions);
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>(
+    readStoredThemeChoice
+  );
   const [editMode, setEditMode] = useState<'toggle' | 'always'>('toggle');
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const stored: UseStoredLayoutResult = useStoredLayout({
@@ -191,6 +203,10 @@ export function App(): ReactElement {
         // Each definition sets `fill`; dropping it shows the default layout.
         .map(({ fill, ...rest }) => (isFilled ? { ...rest, fill } : rest)),
     [isFilled, showErrorDemo]
+  );
+  const builtTheme: BuiltTheme = useMemo(
+    () => buildTheme(themeChoice),
+    [themeChoice]
   );
   const localeOption: LocaleOption = LOCALES[localeIndex] ?? LOCALES[0]!;
 
@@ -253,6 +269,11 @@ export function App(): ReactElement {
       storeOptions(next);
       return next;
     });
+  }
+
+  function handleThemeChange(next: ThemeChoice): void {
+    setThemeChoice(next);
+    storeThemeChoice(next);
   }
 
   function handleResetOptions(): void {
@@ -355,6 +376,11 @@ export function App(): ReactElement {
             title="Settings"
             onClose={() => setSettingsOpen(false)}
           >
+            <ThemePicker
+              choice={themeChoice}
+              error={builtTheme.ok ? null : builtTheme.error}
+              onChange={handleThemeChange}
+            />
             <label className="mb-5 flex items-center gap-2 text-sm">
               Locale
               <select
@@ -376,21 +402,30 @@ export function App(): ReactElement {
               onReset={handleResetOptions}
             />
           </SettingsDialog>
-          <WidgetSettingsProvider
-            locale={localeOption.locale}
-            linkTarget="_blank"
+          {builtTheme.ok && builtTheme.styles !== null && (
+            <style>{builtTheme.styles.css}</style>
+          )}
+          <div
+            {...(builtTheme.ok && builtTheme.styles !== null
+              ? { 'data-dwt-theme': THEME_SCOPE_NAME }
+              : {})}
           >
-            <Dashboard
-              widgets={widgets}
-              layout={stored.layout}
-              onLayoutChange={stored.setLayout}
-              defaultLayout={PAGED_LAYOUT}
-              editMode={editMode}
-              overrideLocks={isAdmin}
-              onRetry={refresh}
-              loadDetail={loadDetail}
-            />
-          </WidgetSettingsProvider>
+            <WidgetSettingsProvider
+              locale={localeOption.locale}
+              linkTarget="_blank"
+            >
+              <Dashboard
+                widgets={widgets}
+                layout={stored.layout}
+                onLayoutChange={stored.setLayout}
+                defaultLayout={PAGED_LAYOUT}
+                editMode={editMode}
+                overrideLocks={isAdmin}
+                onRetry={refresh}
+                loadDetail={loadDetail}
+              />
+            </WidgetSettingsProvider>
+          </div>
         </Section>
       ),
     },

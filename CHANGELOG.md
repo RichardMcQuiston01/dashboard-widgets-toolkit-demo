@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added (toolkit 0.13.0)
+
+- A **Color theme** picker in Settings: Brand blue (this demo's palette),
+  Toolkit default, Forest, Sunset, High contrast and a Custom accent color. Each
+  theme is built with the toolkit's `createTheme` ([`src/data/themes.ts`](./src/data/themes.ts)),
+  scoped to the dashboard with a `data-dwt-theme` attribute, and works in light
+  and dark mode. The choice is saved in this browser. The demo's own palette
+  moved out of `index.css` into the Brand blue theme, so the demo now uses the
+  same API a consumer would.
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.13.0`.
+
 ### Changed (toolkit 0.12.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.12.0`. Each
