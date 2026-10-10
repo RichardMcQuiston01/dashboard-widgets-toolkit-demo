@@ -23,6 +23,7 @@ import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
 import { Footer } from './components/Footer';
 import { OptionsPanel, type ChosenOptions } from './components/OptionsPanel';
+import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
 import { Playground } from './components/Playground';
 import { Section } from './components/Section';
@@ -167,6 +168,7 @@ function StorageNotice({
 export function App(): ReactElement {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [localeIndex, setLocaleIndex] = useState<number>(0);
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [chosenOptions, setChosenOptions] =
     useState<ChosenOptions>(readStoredOptions);
   const [editMode, setEditMode] = useState<'toggle' | 'always'>('toggle');
@@ -273,23 +275,18 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. The eye button opens a sortable, filterable list. Open “Widget options” to change what a widget asks its provider for. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
+          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. The eye button opens a sortable, filterable list. Open Settings (the gear) to change the locale and what each widget asks its provider for. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-sm">
-              Locale
-              <select
-                value={localeIndex}
-                onChange={(event) => setLocaleIndex(Number(event.target.value))}
-                className="rounded-md border border-brand-200 bg-white px-2 py-1.5 dark:border-brand-700 dark:bg-brand-900"
-              >
-                {LOCALES.map((option, index) => (
-                  <option key={option.locale} value={index}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <button
+              type="button"
+              className={`${buttonClass} flex items-center gap-2`}
+              aria-haspopup="dialog"
+              onClick={() => setSettingsOpen(true)}
+            >
+              <GearIcon />
+              Settings
+            </button>
             <button
               type="button"
               className={buttonClass}
@@ -315,7 +312,8 @@ export function App(): ReactElement {
                 )
               }
             >
-              Customize button: {editMode === 'toggle' ? 'on' : 'off'}
+              Edit controls:{' '}
+              {editMode === 'toggle' ? 'behind Customize' : 'always shown'}
             </button>
             <button
               type="button"
@@ -352,12 +350,32 @@ export function App(): ReactElement {
             </button>
           </div>
           <StorageNotice stored={stored} />
-          <OptionsPanel
-            definitions={activeDefinitions}
-            chosen={chosenOptions}
-            onChange={handleOptionChange}
-            onReset={handleResetOptions}
-          />
+          <SettingsDialog
+            open={settingsOpen}
+            title="Settings"
+            onClose={() => setSettingsOpen(false)}
+          >
+            <label className="mb-5 flex items-center gap-2 text-sm">
+              Locale
+              <select
+                value={localeIndex}
+                onChange={(event) => setLocaleIndex(Number(event.target.value))}
+                className="rounded-md border border-brand-200 bg-white px-2 py-1.5 dark:border-brand-700 dark:bg-brand-900"
+              >
+                {LOCALES.map((option, index) => (
+                  <option key={option.locale} value={index}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <OptionsPanel
+              definitions={activeDefinitions}
+              chosen={chosenOptions}
+              onChange={handleOptionChange}
+              onReset={handleResetOptions}
+            />
+          </SettingsDialog>
           <WidgetSettingsProvider
             locale={localeOption.locale}
             linkTarget="_blank"
