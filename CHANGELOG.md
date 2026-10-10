@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.12.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.12.0`. Each
+  card's edit controls (move up, down, to page, hide) are one **Arrange** icon
+  that opens a floating menu, so the card header stays on a single row. Minimize
+  stays its own button.
+
 ### Changed
 
 - The toolkit's page controls: **Move to page** is now an icon that opens a
@@ -17,7 +24,7 @@
 
 ### Changed (toolkit 0.11.2)
 
-Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.11.2` and shows
+Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.12.0` and shows
 everything added since 0.7.0:
 
 - **Locked widgets**: "Sync status" is pinned (`locked: { move: true }`, it can
