@@ -83,6 +83,8 @@ a floating jump-to-top button and a copyright footer:
   the default layout (cards only as big as their content).
 - **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
   and a **Refresh** that re-runs the providers.
+- **Color theme picker** (Settings): presets and a custom accent, each built
+  with the toolkit's `createTheme` and scoped with a `data-dwt-theme` attribute.
 - **Customize / Done edit mode**: the Arrange icon on each card (a menu with
   Move earlier, Move later, Move to page and Hide) shows only after pressing
   Customize, with Reset layout and Revert changes in the toolbar. A
