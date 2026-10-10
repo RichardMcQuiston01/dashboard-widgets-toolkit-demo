@@ -36,7 +36,7 @@ npm install
 
 The demo uses the published
 [`@richardmcquiston01/dashboard-widgets-toolkit`](https://www.npmjs.com/package/@richardmcquiston01/dashboard-widgets-toolkit)
-package (`^0.11.2`).
+package (`^0.12.0`).
 
 ### Usage
 
@@ -83,8 +83,9 @@ a floating jump-to-top button and a copyright footer:
   the default layout (cards only as big as their content).
 - **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
   and a **Refresh** that re-runs the providers.
-- **Customize / Done edit mode**: the move and hide controls show only after
-  pressing Customize, with Reset layout and Revert changes in the toolbar. A
+- **Customize / Done edit mode**: the Arrange icon on each card (a menu with
+  Move earlier, Move later, Move to page and Hide) shows only after pressing
+  Customize, with Reset layout and Revert changes in the toolbar. A
   toggle returns to the always-on controls.
 - **Locked widgets**: "Sync status" is pinned (it can still be hidden or
   minimized) and "Store policy" cannot be moved, hidden or minimized. The
