@@ -31,6 +31,11 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 10,
     width: 3,
     maxWidth: 6,
+    // A view without `convert` is loaded by the provider: it is called with
+    // `options.view === 'trend'` and returns a GRAPH. Only the view on show
+    // loads, and each view is cached apart.
+    baseViewLabel: 'Total',
+    views: [{ key: 'trend', label: 'Trend', kind: 'GRAPH' }],
   }),
   defineWidget({
     key: 'refunds',
@@ -400,7 +405,29 @@ const baseProviders: WidgetProviders<ShopContext> = {
       footer: `and ${PRODUCTS.length - limit} more`,
     };
   },
-  revenue: ({ refreshCount, currency }) => {
+  revenue: ({ refreshCount, currency }, _definition, { view }) => {
+    if (view === 'trend') {
+      return {
+        kind: 'GRAPH',
+        chartType: 'line',
+        valueFormat: 'currency',
+        currency,
+        xLabel: 'Day this month',
+        series: [
+          {
+            name: 'Revenue',
+            points: ['1', '5', '10', '15', '20', '25', '30'].map(
+              (label, index) => ({
+                label,
+                value: Math.round(
+                  400 + index * 130 + wobble(index + refreshCount, 180)
+                ),
+              })
+            ),
+          },
+        ],
+      };
+    }
     const current: number = 18420 + wobble(refreshCount + 1, 2500);
     return {
       kind: 'KPI',

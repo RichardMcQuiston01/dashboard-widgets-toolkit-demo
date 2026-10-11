@@ -110,6 +110,14 @@ a floating jump-to-top button and a copyright footer:
   width, title and options, loaded through the original's provider; **Delete
   this widget** in the clone's dialog removes it. Store policy can't be
   duplicated, and a page with no room disables Duplicate.
+- **Views your provider supplies**: Revenue can show as the **Total** (the KPI)
+  or a **Trend** (a line chart). The Trend is not converted from the KPI: the
+  provider is called with `options.view` and returns a chart, and only the view
+  on show loads.
+- **Drag and drop**: while customizing, each card has a grip next to its Arrange
+  icon. Drag it with a mouse or finger, or use the keyboard (Space or Enter to
+  pick up, arrow keys to move, Space or Enter to drop, Escape to cancel). The
+  move buttons in the Arrange menu still work.
 - **Storage adapters**: the layout is saved with `useStoredLayout` over a
   `localStorage` adapter ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts))
   with an in-memory fallback; changes made in another tab are offered with a

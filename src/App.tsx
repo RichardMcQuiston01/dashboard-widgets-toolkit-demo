@@ -1,6 +1,7 @@
 import {
   EMPTY_LAYOUT,
   optionValuesFromLayout,
+  viewValuesFromLayout,
   withClones,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
@@ -217,11 +218,19 @@ export function App(): ReactElement {
       }),
     [allDefinitions, stored.layout, isAdmin]
   );
+  // Views the provider supplies (Revenue's Trend) are loaded when chosen.
+  const viewValues = useMemo(
+    () =>
+      viewValuesFromLayout(allDefinitions, stored.layout, {
+        overrideLocks: isAdmin,
+      }),
+    [allDefinitions, stored.layout, isAdmin]
+  );
   const { widgets, refresh } = useWidgets(
     allDefinitions,
     widgetProviders,
     shopContext,
-    { optionValues }
+    { optionValues, viewValues }
   );
 
   // The data behind each card's "View" button, loaded only when it is opened.
@@ -400,6 +409,7 @@ export function App(): ReactElement {
                 onLayoutChange={stored.setLayout}
                 defaultLayout={PAGED_LAYOUT}
                 editMode={editMode}
+                draggable
                 overrideLocks={isAdmin}
                 onRetry={refresh}
                 loadDetail={loadDetail}
@@ -435,7 +445,7 @@ export function App(): ReactElement {
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, createLayoutPersistence, optionValuesFromLayout, withClones } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
@@ -475,13 +485,20 @@ const optionValues = useMemo(
   () => optionValuesFromLayout(all, stored.layout),
   [all, stored.layout]
 );
-const { widgets } = useWidgets(all, providers, context, { optionValues });
+// A view your provider supplies (no convert) loads when chosen: the provider
+// gets options.view, so pass the viewers' choices too.
+const viewValues = useMemo(
+  () => viewValuesFromLayout(all, stored.layout),
+  [all, stored.layout]
+);
+const { widgets } = useWidgets(all, providers, context, { optionValues, viewValues });
 
 <Dashboard
   widgets={widgets}
   layout={stored.layout}
   onLayoutChange={stored.setLayout}
   editMode="toggle"
+  draggable
 />`}</code>
           </pre>
         </Section>
