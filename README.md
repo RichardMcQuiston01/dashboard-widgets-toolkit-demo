@@ -15,7 +15,7 @@ Single Page Application (SPA) demo page demonstrating the features of the dashbo
       <source media="(prefers-color-scheme: dark)" srcset="./docs/screenshot-dark.png" />
       <img
         src="./docs/screenshot-light.png"
-        alt="The demo's interactive dashboard on its Sales & traffic page: a blue header with tabs, controls for pages, edit mode, locks and errors, a Settings button, a Customize button and page bar, then two charts and an orders-by-country bar list on a 12-column grid."
+        alt="The demo's interactive dashboard on its Catalog page: a blue header with tabs, controls for settings, pages, edit mode, locks and errors, a Customize button and page bar, then Most popular products shown as bars, Recent orders as a table beside a clone of it shown as a line chart, and an empty New reviews card on a 12-column grid."
         width="900"
       />
     </picture>
