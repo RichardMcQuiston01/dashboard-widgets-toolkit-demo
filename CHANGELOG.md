@@ -14,6 +14,17 @@
   with Most popular products as bars and Recent orders beside a clone of itself
   as a line chart, and the current header and toolbar (no Theme button).
 
+### Added (toolkit 0.17.0 and 0.18.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.18.0`.
+- **Provider-supplied view.** Revenue has a **Trend** view (a line chart of the
+  month's daily revenue) beside its **Total**. The provider is called with
+  `options.view` and returns the chart; the demo passes `viewValues`
+  (`viewValuesFromLayout`) to `useWidgets`, and the Usage tab shows it.
+- **Drag and drop.** `draggable` on the dashboard puts a grip on each card while
+  customizing: pointer, touch and keyboard reordering, with the move buttons kept.
+- Adding or deleting a clone no longer reloads every card (toolkit 0.18.0).
+
 ### Added (toolkit 0.15.0 and 0.16.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.16.0`.
