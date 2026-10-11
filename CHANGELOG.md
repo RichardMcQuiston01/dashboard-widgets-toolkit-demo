@@ -8,6 +8,12 @@
   dark **Mode** is now a choice in Settings, above the Color theme picker (every
   color theme has a light and a dark version).
 
+### Changed (README)
+
+- README screenshots (light and dark) refreshed: they now show the Catalog page
+  with Most popular products as bars and Recent orders beside a clone of itself
+  as a line chart, and the current header and toolbar (no Theme button).
+
 ### Added (toolkit 0.15.0 and 0.16.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.16.0`.
