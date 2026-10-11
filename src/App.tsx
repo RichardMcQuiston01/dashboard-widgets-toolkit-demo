@@ -1,8 +1,11 @@
 import {
   EMPTY_LAYOUT,
   optionValuesFromLayout,
+  parseDetailLink,
   viewValuesFromLayout,
   withClones,
+  withDetailLink,
+  type DetailLink,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
@@ -233,6 +236,38 @@ export function App(): ReactElement {
     { optionValues, viewValues }
   );
 
+  // The open detail view lives in the URL (?widget=recent-orders&sort=c2:desc),
+  // beside the tab in the hash. The query string is the state: it is parsed
+  // against all the widgets, clones included, so a link to a clone works once
+  // the layout has loaded. Opening and closing add history entries (Back
+  // closes the dialog); searching, sorting and paging replace the entry.
+  const [search, setSearch] = useState<string>(window.location.search);
+  const detail: DetailLink | null = useMemo(() => {
+    const parsed = parseDetailLink(search, allDefinitions);
+    if (!parsed.ok) {
+      console.warn(parsed.error);
+      return null;
+    }
+    return parsed.value ?? null;
+  }, [search, allDefinitions]);
+  function handleDetailChange(
+    next: DetailLink | null,
+    reason: 'open' | 'query' | 'close'
+  ): void {
+    const query: string = withDetailLink(window.location.search, next);
+    const url = `${window.location.pathname}${query === '' ? '' : `?${query}`}${window.location.hash}`;
+    if (reason === 'query') window.history.replaceState(null, '', url);
+    else window.history.pushState(null, '', url);
+    setSearch(window.location.search);
+  }
+  useEffect(() => {
+    function handlePopState(): void {
+      setSearch(window.location.search);
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // The data behind each card's "View" button, loaded only when it is opened.
   const loadDetail: DetailLoader = useCallback(
     (definition, { signal }) =>
@@ -246,7 +281,11 @@ export function App(): ReactElement {
 
   function handleTabChange(tabId: string): void {
     setActiveTab(tabId);
-    window.history.replaceState(null, '', `#${tabId}`);
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}#${tabId}`
+    );
   }
 
   useEffect(() => {
@@ -413,6 +452,8 @@ export function App(): ReactElement {
                 overrideLocks={isAdmin}
                 onRetry={refresh}
                 loadDetail={loadDetail}
+                detail={detail}
+                onDetailChange={handleDetailChange}
               />
             </WidgetSettingsProvider>
           </div>
@@ -445,7 +486,7 @@ export function App(): ReactElement {
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones, parseDetailLink, withDetailLink } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
@@ -493,12 +534,27 @@ const viewValues = useMemo(
 );
 const { widgets } = useWidgets(all, providers, context, { optionValues, viewValues });
 
+// Keep the open detail view in the URL (?widget=orders&sort=total:desc&page=2):
+// parse it against the definitions, write it back with withDetailLink.
+const detail = useMemo(() => {
+  const parsed = parseDetailLink(search, all);
+  return parsed.ok ? (parsed.value ?? null) : null;
+}, [search, all]);
+
 <Dashboard
   widgets={widgets}
   layout={stored.layout}
   onLayoutChange={stored.setLayout}
   editMode="toggle"
   draggable
+  detail={detail}
+  onDetailChange={(next, reason) => {
+    const query = withDetailLink(location.search, next);
+    const url = (query === '' ? location.pathname : '?' + query) + location.hash;
+    if (reason === 'query') history.replaceState(null, '', url);
+    else history.pushState(null, '', url);
+    setSearch(location.search);
+  }}
 />`}</code>
           </pre>
         </Section>

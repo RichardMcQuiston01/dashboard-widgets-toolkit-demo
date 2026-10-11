@@ -114,6 +114,12 @@ a floating jump-to-top button and a copyright footer:
   or a **Trend** (a line chart). The Trend is not converted from the KPI: the
   provider is called with `options.view` and returns a chart, and only the view
   on show loads.
+- **Shareable detail views**: the open detail dialog lives in the URL, for
+  example `/?widget=recent-orders&sort=total:desc&page=2#dashboard`. Opening and
+  closing a dialog add history entries (Back closes it), while searching,
+  sorting and paging update the address in place. Reload or share the link and
+  the same view opens. The demo uses `parseDetailLink` and `withDetailLink`
+  from the toolkit; the tab stays in the hash.
 - **Drag and drop**: while customizing, each card has a grip next to its Arrange
   icon. Drag it with a mouse or finger, or use the keyboard (Space or Enter to
   pick up, arrow keys to move, Space or Enter to drop, Escape to cancel). The
