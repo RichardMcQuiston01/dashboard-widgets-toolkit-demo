@@ -71,8 +71,8 @@ a floating jump-to-top button and a copyright footer:
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
-- **Settings** (gear button): a modal with the locale switcher and the widget
-  options panel.
+- **Settings** (gear button): a modal with the color theme picker and the locale
+  switcher.
 - **Locale switcher** (in Settings): formats numbers and currency per locale. Providers
   receive the locale and currency in their context and set `currency` on
   `KPI` and `GRAPH` payloads (the toolkit defaults to USD otherwise).
@@ -95,10 +95,15 @@ a floating jump-to-top button and a copyright footer:
 - **Pages**: three pages with a page bar (shown for two or more pages). While
   customizing, add, rename, move and delete pages, and move a widget to another
   page; the "Pages" toggle switches to a single page.
-- **Declared options**: six widgets declare options with defaults (rows shown,
-  months, period, a text filter, columns, sort). Open Settings (the gear) to change
-  them: providers receive the resolved values, only the changed widget reloads,
-  and sort and column choices are applied by the toolkit.
+- **Declared options and the Options dialog**: six widgets declare options with
+  defaults (rows shown, months, period, a text filter, columns, sort). Press
+  Customize, open a card's Arrange icon and choose **Options…** to change its
+  title, width (Most popular products and Recent orders can't go below half the
+  row; the KPI tiles can't go above half), whether it grows to fill its row, and
+  its declared options. Apply, Discard, Reset to defaults and Revert to before
+  editing each ask first. The choices are saved in the layout (localStorage), and
+  only the widgets whose values changed reload. Store policy is locked against
+  options until you switch on Administrator.
 - **Storage adapters**: the layout is saved with `useStoredLayout` over a
   `localStorage` adapter ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts))
   with an in-memory fallback; changes made in another tab are offered with a

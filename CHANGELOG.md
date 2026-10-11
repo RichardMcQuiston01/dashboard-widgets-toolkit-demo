@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.14.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.14.0`. The
+  Settings dialog's own "Widget options" panel is gone: each card's Arrange menu
+  has an **Options…** item (while customizing) that opens the toolkit's Options
+  dialog for the widget's title, width, Grow to fill and declared options, with
+  confirmations on Apply, Discard, Reset to defaults and Revert to before
+  editing. The choices are saved in the layout, so the demo no longer keeps its
+  own copy in localStorage (`dwt-demo-options`), and feeds them to the providers
+  with `optionValuesFromLayout`.
+- Width limits (`minWidth` / `maxWidth`) on Revenue, Refund rate, Most popular
+  products and Recent orders; Store policy (`locked: true`) is locked against
+  options. The Usage tab shows the wiring.
+
 ### Added (toolkit 0.13.0)
 
 - A **Color theme** picker in Settings: Brand blue (this demo's palette),
