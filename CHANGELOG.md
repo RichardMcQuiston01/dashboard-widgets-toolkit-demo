@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added (toolkit 0.20.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.20.0`.
+- **Theme controls.** Settings gains the toolkit's `highContrast` and `mono`
+  presets (replacing the demo's own high-contrast palette), a **Compact
+  density** switch (`themePresets.compact`, combined with any palette) and a
+  live **Theme check** that shows `checkTheme` warnings for the current choice,
+  for example when a custom accent is too pale to read as a link on white.
+- The dashboard now takes the theme through its `theme` prop instead of a
+  hand-written `<style>` and scope attribute.
+
 ### Changed
 
 - The separate **Theme: light / dark** button is gone from the toolbar: light or

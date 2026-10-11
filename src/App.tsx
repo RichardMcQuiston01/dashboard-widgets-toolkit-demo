@@ -36,7 +36,6 @@ import { Section } from './components/Section';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import { LAYOUT_SCOPE, PAGED_LAYOUT, layoutPersistence } from './data/layouts';
 import {
-  THEME_SCOPE_NAME,
   buildTheme,
   readStoredThemeChoice,
   storeThemeChoice,
@@ -413,6 +412,7 @@ export function App(): ReactElement {
             <ThemePicker
               choice={themeChoice}
               error={builtTheme.ok ? null : builtTheme.error}
+              warnings={builtTheme.ok ? builtTheme.warnings : []}
               onChange={handleThemeChange}
             />
             <label className="mb-5 flex items-center gap-2 text-sm">
@@ -430,14 +430,7 @@ export function App(): ReactElement {
               </select>
             </label>
           </SettingsDialog>
-          {builtTheme.ok && builtTheme.styles !== null && (
-            <style>{builtTheme.styles.css}</style>
-          )}
-          <div
-            {...(builtTheme.ok && builtTheme.styles !== null
-              ? { 'data-dwt-theme': THEME_SCOPE_NAME }
-              : {})}
-          >
+          <div>
             <WidgetSettingsProvider
               locale={localeOption.locale}
               linkTarget="_blank"
@@ -449,6 +442,9 @@ export function App(): ReactElement {
                 defaultLayout={PAGED_LAYOUT}
                 editMode={editMode}
                 draggable
+                {...(builtTheme.ok && builtTheme.styles !== null
+                  ? { theme: builtTheme.styles }
+                  : {})}
                 overrideLocks={isAdmin}
                 onRetry={refresh}
                 loadDetail={loadDetail}
