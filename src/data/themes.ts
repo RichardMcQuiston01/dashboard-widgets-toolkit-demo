@@ -1,12 +1,14 @@
 import {
+  checkTheme,
   createTheme,
+  themePresets,
   type ThemeOptions,
-  type ThemeTokens,
+  type ThemeWarning,
   type WidgetThemeStyles,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 
 export type ThemePresetId =
-  'toolkit' | 'brand' | 'forest' | 'sunset' | 'contrast' | 'custom';
+  'toolkit' | 'brand' | 'forest' | 'sunset' | 'contrast' | 'mono' | 'custom';
 
 export interface ThemePreset {
   readonly id: ThemePresetId;
@@ -30,7 +32,13 @@ export const THEME_PRESETS: readonly ThemePreset[] = [
   {
     id: 'contrast',
     label: 'High contrast',
-    description: 'Black and white text, solid borders.',
+    description:
+      'The toolkit’s highContrast preset: black and white, solid borders.',
+  },
+  {
+    id: 'mono',
+    label: 'Grayscale',
+    description: 'The toolkit’s mono preset: chart series in grays, for print.',
   },
   {
     id: 'custom',
@@ -44,11 +52,14 @@ export const DEFAULT_ACCENT = '#0f5394';
 export interface ThemeChoice {
   readonly presetId: ThemePresetId;
   readonly accent: string;
+  /** Tighter spacing and corners (the toolkit's compact preset). */
+  readonly compact: boolean;
 }
 
 export const DEFAULT_THEME_CHOICE: ThemeChoice = {
   presetId: 'brand',
   accent: DEFAULT_ACCENT,
+  compact: false,
 };
 
 /** The scope attribute value: put it on an ancestor of the dashboard. */
@@ -121,77 +132,104 @@ const PRESET_TOKENS: Readonly<
     },
   },
   contrast: {
-    base: { radius: '4px' },
-    light: {
-      surface: '#ffffff',
-      text: '#000000',
-      textSecondary: '#1f1f1f',
-      textMuted: '#2e2e2e',
-      border: '#000000',
-      grid: '#6b6b6b',
-      baseline: '#000000',
-      link: '#0000c8',
-      focus: '#0000c8',
-      good: '#005a00',
-      bad: '#b00000',
-      meterTrack: '#cfd8ff',
-      barTrack: '#dcdcdc',
-    },
-    dark: {
-      surface: '#000000',
-      text: '#ffffff',
-      textSecondary: '#f0f0f0',
-      textMuted: '#dcdcdc',
-      border: '#ffffff',
-      grid: '#9a9a9a',
-      baseline: '#ffffff',
-      link: '#8ab4ff',
-      focus: '#ffd400',
-      good: '#4ade80',
-      bad: '#ff7b7b',
-      meterTrack: '#1f2f6b',
-      barTrack: '#2b2b2b',
-    },
+    base: themePresets.highContrast.base ?? {},
+    light: themePresets.highContrast.light ?? {},
+    dark: themePresets.highContrast.dark ?? {},
+  },
+  mono: {
+    base: themePresets.mono.base ?? {},
+    light: themePresets.mono.light ?? {},
+    dark: themePresets.mono.dark ?? {},
   },
 };
 
+/** Mixes `hex` with `other` (`amount` of `hex`, 0 to 1) into a `#rrggbb` string. */
+function mixHex(hex: string, other: string, amount: number): string {
+  const channels = (value: string): number[] =>
+    [1, 3, 5].map((start) =>
+      Number.parseInt(value.slice(start, start + 2), 16)
+    );
+  const first: number[] = channels(hex);
+  const second: number[] = channels(other);
+  const mixed: string = first
+    .map((channel, index) =>
+      Math.round(channel * amount + (second[index] ?? 0) * (1 - amount))
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('');
+  return `#${mixed}`;
+}
+
+/**
+ * Tokens for one accent. The mixes are computed here, not with `color-mix()`,
+ * so `checkTheme` can read them and flag a pale accent on a white card.
+ */
 function customTokens(accent: string): ThemeTokenSets {
-  const lightTokens: ThemeTokens = {
-    link: accent,
-    focus: accent,
-    meterTrack: `color-mix(in srgb, ${accent} 20%, white)`,
-    series: [accent],
+  if (!/^#[0-9a-fA-F]{6}$/.test(accent)) {
+    return { light: { link: accent, focus: accent, series: [accent] } };
+  }
+  const lightened: string = mixHex(accent, '#ffffff', 0.55);
+  return {
+    light: {
+      link: accent,
+      focus: accent,
+      meterTrack: mixHex(accent, '#ffffff', 0.2),
+      series: [accent],
+    },
+    dark: {
+      link: lightened,
+      focus: lightened,
+      meterTrack: mixHex(accent, '#000000', 0.35),
+      series: [lightened],
+    },
   };
-  const lightened: string = `color-mix(in srgb, ${accent} 55%, white)`;
-  const darkTokens: ThemeTokens = {
-    link: lightened,
-    focus: lightened,
-    meterTrack: `color-mix(in srgb, ${accent} 35%, black)`,
-    series: [lightened],
-  };
-  return { light: lightTokens, dark: darkTokens };
 }
 
 export type BuiltTheme =
-  | { readonly ok: true; readonly styles: WidgetThemeStyles | null }
+  | {
+      readonly ok: true;
+      readonly styles: WidgetThemeStyles | null;
+      /** Contrast and color-vision findings from `checkTheme`. */
+      readonly warnings: readonly ThemeWarning[];
+    }
   | { readonly ok: false; readonly error: string };
 
+/** The compact preset's spacing, merged under the chosen palette. */
+function withCompact(tokens: ThemeTokenSets, compact: boolean): ThemeTokenSets {
+  if (!compact) return tokens;
+  return {
+    ...tokens,
+    base: { ...(themePresets.compact.base ?? {}), ...(tokens.base ?? {}) },
+  };
+}
+
 /**
- * Turns the viewer's choice into CSS. "Toolkit default" returns no styles, so
- * nothing overrides the package. The caller checks `ok`; an invalid accent
- * comes back as an error that names the token and value.
+ * Turns the viewer's choice into CSS and checks it. "Toolkit default" without
+ * compact returns no styles, so nothing overrides the package. The caller
+ * checks `ok`; an invalid accent comes back as an error that names the token
+ * and value.
  */
 export function buildTheme(choice: ThemeChoice): BuiltTheme {
-  if (choice.presetId === 'toolkit') {
-    return { ok: true, styles: null };
+  if (choice.presetId === 'toolkit' && !choice.compact) {
+    return { ok: true, styles: null, warnings: [] };
   }
-  const tokens: ThemeTokenSets =
-    choice.presetId === 'custom'
-      ? customTokens(choice.accent)
-      : PRESET_TOKENS[choice.presetId];
-  const result = createTheme({ name: THEME_SCOPE_NAME, ...tokens });
+  const palette: ThemeTokenSets =
+    choice.presetId === 'toolkit'
+      ? {}
+      : choice.presetId === 'custom'
+        ? customTokens(choice.accent)
+        : PRESET_TOKENS[choice.presetId];
+  const result = createTheme({
+    name: THEME_SCOPE_NAME,
+    ...withCompact(palette, choice.compact),
+  });
   return result.ok
-    ? { ok: true, styles: result.value }
+    ? {
+        ok: true,
+        styles: result.value,
+        warnings: checkTheme(result.value),
+      }
     : { ok: false, error: result.error };
 }
 
@@ -205,13 +243,14 @@ export function readStoredThemeChoice(): ThemeChoice {
     if (typeof parsed !== 'object' || parsed === null) {
       return DEFAULT_THEME_CHOICE;
     }
-    const { presetId, accent } = parsed as Partial<ThemeChoice>;
+    const { presetId, accent, compact } = parsed as Partial<ThemeChoice>;
     const knownPreset: boolean = THEME_PRESETS.some(
       (preset) => preset.id === presetId
     );
     return {
       presetId: knownPreset ? (presetId as ThemePresetId) : 'brand',
       accent: typeof accent === 'string' ? accent : DEFAULT_ACCENT,
+      compact: compact === true,
     };
   } catch {
     return DEFAULT_THEME_CHOICE;
@@ -233,6 +272,10 @@ export function presetSwatches(
 ): readonly string[] {
   if (presetId === 'toolkit') return ['#2a78d6', '#eb6834', '#1baf7a'];
   if (presetId === 'custom') return [accent];
-  if (presetId === 'contrast') return ['#000000', '#0000c8', '#ffffff'];
+  if (presetId === 'contrast' || presetId === 'mono') {
+    return (
+      PRESET_TOKENS[presetId].light?.series ?? ['#000000', '#0000cc', '#ffffff']
+    ).slice(0, 3);
+  }
   return (PRESET_TOKENS[presetId].light?.series ?? []).slice(0, 3);
 }

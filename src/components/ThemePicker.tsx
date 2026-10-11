@@ -1,5 +1,7 @@
 import { useId, type ReactElement } from 'react';
 
+import type { ThemeWarning } from '@richardmcquiston01/dashboard-widgets-toolkit';
+
 import {
   THEME_PRESETS,
   presetSwatches,
@@ -11,6 +13,8 @@ interface ThemePickerProps {
   readonly choice: ThemeChoice;
   /** Message from `createTheme` when the current choice is invalid. */
   readonly error: string | null;
+  /** Findings from `checkTheme` for the current choice. */
+  readonly warnings: readonly ThemeWarning[];
   readonly onChange: (next: ThemeChoice) => void;
 }
 
@@ -18,6 +22,7 @@ interface ThemePickerProps {
 export function ThemePicker({
   choice,
   error,
+  warnings,
   onChange,
 }: ThemePickerProps): ReactElement {
   const accentId: string = useId();
@@ -86,6 +91,59 @@ export function ThemePicker({
           <code className="text-slate-600 dark:text-slate-400">
             {choice.accent}
           </code>
+        </div>
+      )}
+      <label className="mt-3 flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={choice.compact}
+          onChange={(event) =>
+            onChange({ ...choice, compact: event.target.checked })
+          }
+        />
+        Compact density{' '}
+        <span className="text-slate-600 dark:text-slate-400">
+          (the toolkit’s compact preset: tighter spacing, smaller corners)
+        </span>
+      </label>
+      {error === null && (
+        <div
+          className="mt-3 text-sm"
+          data-testid="theme-check"
+          aria-live="polite"
+        >
+          <p className="font-medium">
+            Theme check{' '}
+            <span className="font-normal text-slate-600 dark:text-slate-400">
+              (<code>checkTheme</code>: contrast and color vision)
+            </span>
+          </p>
+          {warnings.length === 0 ? (
+            <p className="text-emerald-700 dark:text-emerald-300">
+              No problems found.
+            </p>
+          ) : (
+            <ul className="mt-1 list-disc space-y-0.5 pl-5">
+              {warnings.map((warning, index) => (
+                <li
+                  key={`${warning.mode}-${warning.check}-${index}`}
+                  className={
+                    warning.severity === 'warning'
+                      ? 'text-amber-800 dark:text-amber-300'
+                      : 'text-slate-600 dark:text-slate-400'
+                  }
+                >
+                  <span className="font-medium">
+                    {warning.severity === 'warning' ? 'Warning' : 'Note'}
+                    {' ('}
+                    {warning.mode}
+                    {'): '}
+                  </span>
+                  {warning.message}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {error !== null && (
