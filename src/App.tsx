@@ -1,6 +1,7 @@
 import {
   EMPTY_LAYOUT,
   optionValuesFromLayout,
+  withClones,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
@@ -202,15 +203,22 @@ export function App(): ReactElement {
   );
   // The option values each viewer chose live in the layout; this hands them
   // to the providers (and sends the defaults back after a Reset).
+  // Clones are widgets too: add them to the definitions so they load (through
+  // their original's provider) and get their own option values.
+  const allDefinitions: readonly WidgetDefinition[] = useMemo(
+    () =>
+      withClones(activeDefinitions, stored.layout, { overrideLocks: isAdmin }),
+    [activeDefinitions, stored.layout.clones, isAdmin]
+  );
   const optionValues = useMemo(
     () =>
-      optionValuesFromLayout(activeDefinitions, stored.layout, {
+      optionValuesFromLayout(allDefinitions, stored.layout, {
         overrideLocks: isAdmin,
       }),
-    [activeDefinitions, stored.layout, isAdmin]
+    [allDefinitions, stored.layout, isAdmin]
   );
   const { widgets, refresh } = useWidgets(
-    activeDefinitions,
+    allDefinitions,
     widgetProviders,
     shopContext,
     { optionValues }
@@ -219,7 +227,11 @@ export function App(): ReactElement {
   // The data behind each card's "View" button, loaded only when it is opened.
   const loadDetail: DetailLoader = useCallback(
     (definition, { signal }) =>
-      loadWidgetDetail(definition.key, localeOption, signal),
+      loadWidgetDetail(
+        definition.sourceKey ?? definition.key,
+        localeOption,
+        signal
+      ),
     [localeOption]
   );
 
@@ -423,7 +435,7 @@ export function App(): ReactElement {
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, createLayoutPersistence, optionValuesFromLayout } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { defineWidget, createLayoutPersistence, optionValuesFromLayout, withClones } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
@@ -452,13 +464,18 @@ const providers = {
 const persistence = createLayoutPersistence(withFallback(localStorageAdapter, memoryAdapter()));
 const stored = useStoredLayout({ persistence, scope, definitions, defaultLayout });
 
-// The Options dialog saves each viewer's title, width and option values in
-// the layout. This hands the chosen option values to the providers.
-const optionValues = useMemo(
-  () => optionValuesFromLayout(definitions, stored.layout),
-  [stored.layout]
+// The Options dialog saves each viewer's title, width, view and option values
+// in the layout, and Duplicate adds clones. Clones are widgets too: add them to
+// the definitions so they load through their original's provider.
+const all = useMemo(
+  () => withClones(definitions, stored.layout),
+  [definitions, stored.layout.clones]
 );
-const { widgets } = useWidgets(definitions, providers, context, { optionValues });
+const optionValues = useMemo(
+  () => optionValuesFromLayout(all, stored.layout),
+  [all, stored.layout]
+);
+const { widgets } = useWidgets(all, providers, context, { optionValues });
 
 <Dashboard
   widgets={widgets}

@@ -8,6 +8,21 @@
   dark **Mode** is now a choice in Settings, above the Color theme picker (every
   color theme has a light and a dark version).
 
+### Added (toolkit 0.15.0 and 0.16.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.16.0`.
+- **Alternate views.** Most popular products can show as a table, bars or a bar
+  chart of units sold; Recent orders as a table, bars or a line chart of order
+  totals. Pick one in the **View** field of the Options dialog; switching never
+  reloads the data.
+- **Clones.** Each card's Arrange menu (while customizing) has **Duplicate**,
+  which makes a copy with its own view, width, title and option values (for
+  example Recent orders as a table and as a chart side by side, or Most popular
+  products filtered two ways). Its Options dialog opens straight away and has
+  **Delete this widget**. The demo adds `withClones` to the definitions it gives
+  `useWidgets`; the Usage tab shows the wiring. Store policy (`locked: true`)
+  can't be duplicated, and Duplicate is disabled when a page has no room.
+
 ### Changed (toolkit 0.14.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.14.0`. The
