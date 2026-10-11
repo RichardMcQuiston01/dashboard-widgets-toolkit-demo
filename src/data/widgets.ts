@@ -123,6 +123,28 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     minWidth: 6,
     detail: { pageSize: 10 },
     tableControls: true,
+    // Other ways to show the same rows. The cells carry numeric `value`s, which
+    // the conversions read; switching views never reloads.
+    baseViewLabel: 'Table',
+    views: [
+      {
+        key: 'bars',
+        label: 'Bars',
+        kind: 'BAR_LIST',
+        convert: { type: 'tableToBarList', label: 1, value: 2 },
+      },
+      {
+        key: 'chart',
+        label: 'Bar chart',
+        kind: 'GRAPH',
+        convert: {
+          type: 'tableToGraph',
+          label: 1,
+          values: [2],
+          chartType: 'bar',
+        },
+      },
+    ],
     options: [
       {
         key: 'limit',
@@ -202,6 +224,26 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     minWidth: 6,
     detail: { title: 'All orders', pageSize: 10 },
     tableControls: true,
+    views: [
+      {
+        key: 'bars',
+        label: 'Bars',
+        kind: 'BAR_LIST',
+        convert: { type: 'tableToBarList', label: 0, value: 2 },
+      },
+      {
+        key: 'line',
+        label: 'Line chart',
+        kind: 'GRAPH',
+        convert: {
+          type: 'tableToGraph',
+          label: 0,
+          values: [2],
+          chartType: 'line',
+          valueFormat: 'currency',
+        },
+      },
+    ],
     options: [
       {
         key: 'customer',
