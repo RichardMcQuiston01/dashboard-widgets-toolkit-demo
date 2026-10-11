@@ -104,6 +104,12 @@ a floating jump-to-top button and a copyright footer:
   editing each ask first. The choices are saved in the layout (localStorage), and
   only the widgets whose values changed reload. Store policy is locked against
   options until you switch on Administrator.
+- **Alternate views and clones**: Most popular products and Recent orders
+  declare `views` (bars, a chart), chosen in the Options dialog's **View**
+  field. **Duplicate** in the Arrange menu makes a clone with its own view,
+  width, title and options, loaded through the original's provider; **Delete
+  this widget** in the clone's dialog removes it. Store policy can't be
+  duplicated, and a page with no room disables Duplicate.
 - **Storage adapters**: the layout is saved with `useStoredLayout` over a
   `localStorage` adapter ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts))
   with an in-memory fallback; changes made in another tab are offered with a
