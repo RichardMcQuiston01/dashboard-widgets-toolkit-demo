@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed
+
+- The separate **Theme: light / dark** button is gone from the toolbar: light or
+  dark **Mode** is now a choice in Settings, above the Color theme picker (every
+  color theme has a light and a dark version).
+
 ### Changed (toolkit 0.14.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.14.0`. The
