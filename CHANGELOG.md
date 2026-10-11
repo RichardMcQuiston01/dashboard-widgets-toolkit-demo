@@ -14,6 +14,16 @@
   with Most popular products as bars and Recent orders beside a clone of itself
   as a line chart, and the current header and toolbar (no Theme button).
 
+### Added (toolkit 0.19.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.19.0`.
+- **Detail view deep links.** The open detail dialog is kept in the URL
+  (`?widget=recent-orders&sort=total:desc&page=2`): reloading or sharing the
+  link opens the same view. Opening and closing push history entries so Back
+  closes the dialog; search, sort and paging replace the current entry. An
+  unknown widget in the link opens nothing. The tab stays in the hash, and
+  changing tabs no longer drops the query string. The Usage tab shows the wiring.
+
 ### Added (toolkit 0.17.0 and 0.18.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.18.0`.
