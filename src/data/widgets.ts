@@ -30,6 +30,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 10,
     width: 3,
+    maxWidth: 6,
   }),
   defineWidget({
     key: 'refunds',
@@ -38,6 +39,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 20,
     width: 3,
+    maxWidth: 6,
   }),
   defineWidget({
     key: 'storage',
@@ -118,6 +120,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 65,
     width: 8,
+    minWidth: 6,
     detail: { pageSize: 10 },
     tableControls: true,
     options: [
@@ -196,6 +199,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 90,
     width: 6,
+    minWidth: 6,
     detail: { title: 'All orders', pageSize: 10 },
     tableControls: true,
     options: [

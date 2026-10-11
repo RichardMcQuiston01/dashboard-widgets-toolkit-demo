@@ -1,5 +1,6 @@
 import {
   EMPTY_LAYOUT,
+  optionValuesFromLayout,
   type WidgetDefinition,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import {
@@ -22,7 +23,6 @@ import { BackToTop } from './components/BackToTop';
 import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
 import { Footer } from './components/Footer';
-import { OptionsPanel, type ChosenOptions } from './components/OptionsPanel';
 import { ThemePicker } from './components/ThemePicker';
 import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
@@ -60,29 +60,6 @@ const LOCALES: readonly LocaleOption[] = [
   { label: 'German · EUR', locale: 'de-DE', currency: 'EUR' },
   { label: 'Japanese · JPY', locale: 'ja-JP', currency: 'JPY' },
 ];
-
-const OPTIONS_STORAGE_KEY = 'dwt-demo-options';
-
-/** Viewer-chosen widget options, kept in this browser only. */
-function readStoredOptions(): ChosenOptions {
-  try {
-    const raw: string | null = window.localStorage.getItem(OPTIONS_STORAGE_KEY);
-    const parsed: unknown = raw === null ? {} : JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null
-      ? (parsed as ChosenOptions)
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-function storeOptions(chosen: ChosenOptions): void {
-  try {
-    window.localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(chosen));
-  } catch (error: unknown) {
-    console.warn('Could not save the widget options to localStorage.', error);
-  }
-}
 
 function initialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -178,8 +155,6 @@ export function App(): ReactElement {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [localeIndex, setLocaleIndex] = useState<number>(0);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
-  const [chosenOptions, setChosenOptions] =
-    useState<ChosenOptions>(readStoredOptions);
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>(
     readStoredThemeChoice
   );
@@ -225,11 +200,20 @@ export function App(): ReactElement {
     }),
     [localeOption.currency, localeOption.locale, refreshCount]
   );
+  // The option values each viewer chose live in the layout; this hands them
+  // to the providers (and sends the defaults back after a Reset).
+  const optionValues = useMemo(
+    () =>
+      optionValuesFromLayout(activeDefinitions, stored.layout, {
+        overrideLocks: isAdmin,
+      }),
+    [activeDefinitions, stored.layout, isAdmin]
+  );
   const { widgets, refresh } = useWidgets(
     activeDefinitions,
     widgetProviders,
     shopContext,
-    { optionValues: chosenOptions }
+    { optionValues }
   );
 
   // The data behind each card's "View" button, loaded only when it is opened.
@@ -256,29 +240,9 @@ export function App(): ReactElement {
     setRefreshCount((count) => count + 1);
   }
 
-  function handleOptionChange(
-    widgetKey: string,
-    optionKey: string,
-    value: unknown
-  ): void {
-    setChosenOptions((current) => {
-      const next: ChosenOptions = {
-        ...current,
-        [widgetKey]: { ...current[widgetKey], [optionKey]: value },
-      };
-      storeOptions(next);
-      return next;
-    });
-  }
-
   function handleThemeChange(next: ThemeChoice): void {
     setThemeChoice(next);
     storeThemeChoice(next);
-  }
-
-  function handleResetOptions(): void {
-    setChosenOptions({});
-    storeOptions({});
   }
 
   function handleTogglePages(): void {
@@ -296,7 +260,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. The eye button opens a sortable, filterable list. Open Settings (the gear) to change the locale and what each widget asks its provider for. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
+          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
@@ -395,12 +359,6 @@ export function App(): ReactElement {
                 ))}
               </select>
             </label>
-            <OptionsPanel
-              definitions={activeDefinitions}
-              chosen={chosenOptions}
-              onChange={handleOptionChange}
-              onReset={handleResetOptions}
-            />
           </SettingsDialog>
           {builtTheme.ok && builtTheme.styles !== null && (
             <style>{builtTheme.styles.css}</style>
@@ -455,7 +413,7 @@ export function App(): ReactElement {
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, createLayoutPersistence } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { defineWidget, createLayoutPersistence, optionValuesFromLayout } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
@@ -468,6 +426,7 @@ import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
   title: 'Most popular products',
   kind: 'TABLE',
   locked: { move: true }, // pinned; still hideable
+  minWidth: 6, // viewers can resize it, but not below half the row
   options: [
     { key: 'limit', type: 'number', label: 'Rows', min: 3, max: 10, default: 5 },
     { key: 'order', type: 'sort', label: 'Order by', apply: 'client',
@@ -479,13 +438,17 @@ import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
 const providers = {
   'top-products': (context, definition, { options }) => load(options.limit),
 };
-const { widgets } = useWidgets(definitions, providers, context, {
-  optionValues, // { 'top-products': { limit: 7 } }
-});
-
 // Bring your own storage: an adapter has get, set, remove and subscribe.
 const persistence = createLayoutPersistence(withFallback(localStorageAdapter, memoryAdapter()));
 const stored = useStoredLayout({ persistence, scope, definitions, defaultLayout });
+
+// The Options dialog saves each viewer's title, width and option values in
+// the layout. This hands the chosen option values to the providers.
+const optionValues = useMemo(
+  () => optionValuesFromLayout(definitions, stored.layout),
+  [stored.layout]
+);
+const { widgets } = useWidgets(definitions, providers, context, { optionValues });
 
 <Dashboard
   widgets={widgets}
