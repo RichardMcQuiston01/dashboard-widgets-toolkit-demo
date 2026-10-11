@@ -71,8 +71,8 @@ a floating jump-to-top button and a copyright footer:
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
-- **Settings** (gear button): a modal with the color theme picker and the locale
-  switcher.
+- **Settings** (gear button): a modal with the light / dark mode, the color theme
+  picker and the locale switcher.
 - **Locale switcher** (in Settings): formats numbers and currency per locale. Providers
   receive the locale and currency in their context and set `currency` on
   `KPI` and `GRAPH` payloads (the toolkit defaults to USD otherwise).
@@ -81,7 +81,7 @@ a floating jump-to-top button and a copyright footer:
   `fill: 'both'`, so cards stretch to their row's height and take the columns
   left over in their row. The toggle drops `fill` from the definitions to show
   the default layout (cards only as big as their content).
-- **Light / dark theme** (blue brand palette via `--dwt-*` custom properties)
+- **Light / dark mode** (in Settings; blue brand palette via `--dwt-*` custom properties)
   and a **Refresh** that re-runs the providers.
 - **Color theme picker** (Settings): presets and a custom accent, each built
   with the toolkit's `createTheme` and scoped with a `data-dwt-theme` attribute.

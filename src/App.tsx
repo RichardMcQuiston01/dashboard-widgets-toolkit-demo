@@ -260,7 +260,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
+          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme, light or dark mode and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
@@ -324,15 +324,6 @@ export function App(): ReactElement {
             >
               Fill widgets: {isFilled ? 'on' : 'off'}
             </button>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() =>
-                setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
-              }
-            >
-              Theme: {theme}
-            </button>
           </div>
           <StorageNotice stored={stored} />
           <SettingsDialog
@@ -340,6 +331,25 @@ export function App(): ReactElement {
             title="Settings"
             onClose={() => setSettingsOpen(false)}
           >
+            <fieldset className="mb-5">
+              <legend className="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-200">
+                Mode
+              </legend>
+              <div className="flex gap-4 text-sm">
+                {(['light', 'dark'] as const).map((mode) => (
+                  <label key={mode} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="color-mode"
+                      value={mode}
+                      checked={theme === mode}
+                      onChange={() => setTheme(mode)}
+                    />
+                    {mode === 'light' ? 'Light' : 'Dark'}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <ThemePicker
               choice={themeChoice}
               error={builtTheme.ok ? null : builtTheme.error}
