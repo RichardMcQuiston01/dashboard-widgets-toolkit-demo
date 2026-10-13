@@ -3,6 +3,7 @@ import {
   emptyWidget,
   formatValue,
   type DetailData,
+  type TableWidgetData,
   type WidgetContext,
   type WidgetDefinition,
   type WidgetProvider,
@@ -280,6 +281,17 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     width: 3,
   }),
   defineWidget({
+    key: 'accounts',
+    title: 'Wholesale accounts',
+    description:
+      'Column field types: an email link, a website link, a logo image, a brand color swatch and a custom status badge.',
+    kind: 'TABLE',
+    fill: 'both',
+    sortOrder: 105,
+    width: 12,
+    tableControls: true,
+  }),
+  defineWidget({
     key: ERROR_DEMO_KEY,
     title: 'Error handling demo',
     description:
@@ -304,6 +316,63 @@ const MONTHS: readonly string[] = [
   'Oct',
   'Nov',
   'Dec',
+];
+
+type AccountStatus = 'active' | 'review' | 'paused';
+
+/** The words shown for each status; the badge formatter draws the color. */
+export const STATUS_LABELS: Readonly<Record<AccountStatus, string>> = {
+  active: 'Active',
+  review: 'In review',
+  paused: 'Paused',
+};
+
+/** name, logo file, contact, contact email, website, brand color, status. */
+const ACCOUNTS: readonly (readonly [
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  AccountStatus,
+])[] = [
+  [
+    'Acme Craft Supply',
+    'acme',
+    'Ann Lee',
+    'ann.lee@acme.example',
+    'https://acme.example/wholesale',
+    '#0f5394',
+    'active',
+  ],
+  [
+    'Birch & Bark',
+    'birch',
+    'Ben Ortiz',
+    'ben@birchbark.example',
+    'https://birchbark.example',
+    '#1b6b3f',
+    'active',
+  ],
+  [
+    'Cedar Lane Makers',
+    'cedar',
+    'Cora Diaz',
+    'cora@cedarlane.example',
+    'https://cedarlane.example/shop',
+    '#b23a12',
+    'review',
+  ],
+  [
+    'Delta Laser Works',
+    'delta',
+    'Dev Patel',
+    'dev@deltalaser.example',
+    'https://deltalaser.example',
+    '#7c3aed',
+    'paused',
+  ],
 ];
 
 /** Small deterministic pseudo-random wobble so refreshes change the data. */
@@ -566,6 +635,25 @@ const baseProviders: WidgetProviders<ShopContext> = {
     };
   },
   reviews: () => emptyWidget('No new reviews this week.'),
+  accounts: (): TableWidgetData => ({
+    kind: 'TABLE',
+    columns: [
+      { label: 'Account' },
+      { label: 'Logo', type: 'image' },
+      { label: 'Contact', type: 'email' },
+      { label: 'Website', type: 'url' },
+      { label: 'Brand color', type: 'color' },
+      { label: 'Status', type: 'custom', formatter: 'statusBadge' },
+    ],
+    rows: ACCOUNTS.map(([name, logo, contact, email, site, color, status]) => [
+      { text: name },
+      { text: `${name} logo`, value: `/logos/${logo}.svg` },
+      { text: contact, value: email },
+      { text: new URL(site).hostname, value: site },
+      { text: color, value: color },
+      { text: STATUS_LABELS[status], value: status },
+    ]),
+  }),
   [ERROR_DEMO_KEY]: () => {
     throw new Error('Simulated failure: upstream analytics API returned 503.');
   },
@@ -585,6 +673,7 @@ const LATENCY_MS: Readonly<Record<string, number>> = {
   'low-stock': 1000,
   'recent-orders': 1100,
   reviews: 500,
+  accounts: 650,
   [ERROR_DEMO_KEY]: 1400,
 };
 

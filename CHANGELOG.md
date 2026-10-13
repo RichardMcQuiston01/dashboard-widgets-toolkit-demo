@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Added (toolkit 0.22.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.22.0`.
+- **Field types.** A new **Wholesale accounts** table on the Catalog page shows
+  the column field types: an `image` logo, an `email` link, a `url` link that
+  opens in a new tab, a `color` swatch and a `custom` status badge (the
+  `statusBadge` formatter, registered with `WidgetSettingsProvider`'s
+  `formatters`, with `onFormatterError` logging a missing or failing one).
+- **Remembered page and Revert after a reload.** The dashboard now passes
+  `stored.activePage` / `stored.setActivePage` and `stored.backup` /
+  `stored.setBackup` to `Dashboard`: a reload returns to the page you were on,
+  and a reload in the middle of Customize keeps Revert changes working.
+- The Use it in your app tab shows both.
+
 ### Added (toolkit 0.20.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.20.0`.
