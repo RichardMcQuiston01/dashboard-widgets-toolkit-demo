@@ -35,7 +35,7 @@ export const PAGED_LAYOUT: DashboardLayout = {
     {
       key: 'catalog',
       title: 'Catalog',
-      order: ['top-products', 'recent-orders', 'reviews'],
+      order: ['top-products', 'recent-orders', 'reviews', 'accounts'],
       hidden: [],
       minimized: [],
     },

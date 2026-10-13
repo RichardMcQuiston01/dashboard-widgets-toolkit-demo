@@ -13,6 +13,8 @@ import {
   WidgetSettingsProvider,
   useStoredLayout,
   useWidgets,
+  type CellFormatter,
+  type CellFormatterProblem,
   type DetailLoader,
   type UseStoredLayoutResult,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
@@ -28,6 +30,7 @@ import { BackToTop } from './components/BackToTop';
 import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
 import { Footer } from './components/Footer';
+import { statusBadge } from './components/StatusBadge';
 import { ThemePicker } from './components/ThemePicker';
 import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
@@ -64,6 +67,16 @@ const LOCALES: readonly LocaleOption[] = [
   { label: 'German · EUR', locale: 'de-DE', currency: 'EUR' },
   { label: 'Japanese · JPY', locale: 'ja-JP', currency: 'JPY' },
 ];
+
+/** Formatters for `custom` table columns, by the name a column gives. */
+const CELL_FORMATTERS: Readonly<Record<string, CellFormatter>> = {
+  statusBadge,
+};
+
+/** A missing or failing formatter shows the cell's text; this says why. */
+function reportFormatterProblem(problem: CellFormatterProblem): void {
+  console.warn(problem.message);
+}
 
 function initialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -434,12 +447,20 @@ export function App(): ReactElement {
             <WidgetSettingsProvider
               locale={localeOption.locale}
               linkTarget="_blank"
+              formatters={CELL_FORMATTERS}
+              onFormatterError={reportFormatterProblem}
             >
               <Dashboard
                 widgets={widgets}
                 layout={stored.layout}
                 onLayoutChange={stored.setLayout}
                 defaultLayout={PAGED_LAYOUT}
+                {...(stored.activePage === undefined
+                  ? {}
+                  : { activePage: stored.activePage })}
+                onActivePageChange={stored.setActivePage}
+                backup={stored.backup}
+                onBackup={stored.setBackup}
                 editMode={editMode}
                 draggable
                 {...(builtTheme.ok && builtTheme.styles !== null
@@ -510,6 +531,8 @@ const providers = {
 // Bring your own storage: an adapter has get, set, remove and subscribe.
 const persistence = createLayoutPersistence(withFallback(localStorageAdapter, memoryAdapter()));
 const stored = useStoredLayout({ persistence, scope, definitions, defaultLayout });
+// stored.activePage and stored.backup go to Dashboard too (see below): a reload
+// returns to the same page, and Revert still works after a reload mid-edit.
 
 // The Options dialog saves each viewer's title, width, view and option values
 // in the layout, and Duplicate adds clones. Clones are widgets too: add them to
@@ -537,12 +560,34 @@ const detail = useMemo(() => {
   return parsed.ok ? (parsed.value ?? null) : null;
 }, [search, all]);
 
+// Table columns can say how their cells are shown (email, url, image, color,
+// custom). A custom column names a formatter you register once; a missing or
+// failing one shows the cell's text and reports through onFormatterError.
+const accounts = {
+  kind: 'TABLE',
+  columns: [
+    { label: 'Contact', type: 'email' },
+    { label: 'Logo', type: 'image' },
+    { label: 'Status', type: 'custom', formatter: 'statusBadge' },
+  ],
+  rows: [[
+    { text: 'Ann Lee', value: 'ann@acme.example' },
+    { text: 'Acme logo', value: '/logos/acme.svg' },
+    { text: 'Active', value: 'active' },
+  ]],
+};
+// <WidgetSettingsProvider formatters={{ statusBadge: ({ text, value }) => <Badge status={value}>{text}</Badge> }}>
+
 <Dashboard
   widgets={widgets}
   layout={stored.layout}
   onLayoutChange={stored.setLayout}
   editMode="toggle"
   draggable
+  activePage={stored.activePage}
+  onActivePageChange={stored.setActivePage}
+  backup={stored.backup}
+  onBackup={stored.setBackup}
   detail={detail}
   onDetailChange={(next, reason) => {
     const query = withDetailLink(location.search, next);

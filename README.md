@@ -87,6 +87,10 @@ a floating jump-to-top button and a copyright footer:
   `highContrast` and `mono`), a custom accent and a Compact density switch,
   each built with `createTheme` and passed to `Dashboard` as `theme`. A live
   Theme check lists the `checkTheme` contrast and color-vision warnings.
+- **Field types**: the Wholesale accounts table on the Catalog page shows
+  `image`, `email`, `url`, `color` and `custom` (status badge) columns.
+- **Remembered page and Revert**: a reload returns to the page you were on, and
+  Revert changes still works after a reload in the middle of Customize.
 - **Customize / Done edit mode**: the Arrange icon on each card (a menu with
   Move earlier, Move later, Move to page and Hide) shows only after pressing
   Customize, with Reset layout and Revert changes in the toolbar. A
