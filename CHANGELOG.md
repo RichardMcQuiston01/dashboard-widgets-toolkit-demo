@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added (toolkit 0.25.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.25.0`.
+- **Dashboard filters.** A **Sales channel** filter bar sits above the cards
+  (`useDashboardFilters`, `Dashboard` `filters` / `filterValues` /
+  `onFilterChange`, and the same filters and values passed to `useWidgets`).
+  Only Revenue and Monthly revenue name the filter, so only they reload (keeping
+  what they show until the new data arrives); the other widgets declare
+  `filters: []`. The providers read `options.filters`.
+- The Use it in your app tab shows the wiring.
+
 ### Added (toolkit 0.22.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.22.0`.

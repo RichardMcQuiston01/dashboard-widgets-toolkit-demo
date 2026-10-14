@@ -2,6 +2,7 @@ import {
   defineWidget,
   emptyWidget,
   formatValue,
+  type DashboardFilter,
   type DetailData,
   type TableWidgetData,
   type WidgetContext,
@@ -23,9 +24,37 @@ export interface ShopContext extends WidgetContext {
 /** Key of the widget whose provider intentionally fails. */
 export const ERROR_DEMO_KEY = 'flaky';
 
+/** Dashboard-level filters; only the widgets that name them reload. */
+export const dashboardFilters: readonly DashboardFilter[] = [
+  {
+    key: 'channel',
+    type: 'choice',
+    label: 'Sales channel',
+    choices: [
+      { value: 'all', label: 'All channels' },
+      { value: 'online', label: 'Online' },
+      { value: 'in-person', label: 'In person' },
+    ],
+    default: 'all',
+  },
+];
+
+/** Share of the shop's numbers that belong to each sales channel. */
+const CHANNEL_SHARE: Readonly<Record<string, number>> = {
+  all: 1,
+  online: 0.7,
+  'in-person': 0.3,
+};
+
+function channelShare(filters: Readonly<Record<string, unknown>>): number {
+  const channel: unknown = filters['channel'];
+  return typeof channel === 'string' ? (CHANNEL_SHARE[channel] ?? 1) : 1;
+}
+
 export const widgetDefinitions: readonly WidgetDefinition[] = [
   defineWidget({
     key: 'revenue',
+    filters: ['channel'],
     title: 'Revenue',
     kind: 'KPI',
     fill: 'both',
@@ -40,6 +69,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'refunds',
+    filters: [],
     title: 'Refund rate',
     kind: 'KPI',
     fill: 'both',
@@ -49,6 +79,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'storage',
+    filters: [],
     title: 'Storage used',
     kind: 'GAUGE',
     fill: 'both',
@@ -57,6 +88,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'status',
+    filters: [],
     title: 'Sync status',
     description:
       'Locked in place: viewers can hide or minimize it, not move it.',
@@ -68,6 +100,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'policy',
+    filters: [],
     title: 'Store policy',
     description: 'Fully locked: it cannot be moved, hidden or minimized.',
     kind: 'TEXT',
@@ -78,6 +111,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'monthly',
+    filters: ['channel'],
     title: 'Revenue by month',
     kind: 'GRAPH',
     fill: 'both',
@@ -99,6 +133,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'traffic',
+    filters: [],
     title: 'Views per day',
     kind: 'GRAPH',
     fill: 'both',
@@ -120,6 +155,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'top-products',
+    filters: [],
     title: 'Most popular products',
     description: 'By units sold in the last 12 months.',
     kind: 'TABLE',
@@ -176,6 +212,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'countries',
+    filters: [],
     title: 'Orders by country',
     kind: 'BAR_LIST',
     fill: 'both',
@@ -206,6 +243,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'low-stock',
+    filters: [],
     title: 'Low stock',
     kind: 'ALERT_LIST',
     fill: 'both',
@@ -222,6 +260,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'recent-orders',
+    filters: [],
     title: 'Recent orders',
     kind: 'TABLE',
     fill: 'both',
@@ -274,6 +313,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'reviews',
+    filters: [],
     title: 'New reviews',
     kind: 'TABLE',
     fill: 'both',
@@ -282,6 +322,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: 'accounts',
+    filters: [],
     title: 'Wholesale accounts',
     description:
       'Column field types: an email link, a website link, a logo image, a brand color swatch and a custom status badge.',
@@ -293,6 +334,7 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
   }),
   defineWidget({
     key: ERROR_DEMO_KEY,
+    filters: [],
     title: 'Error handling demo',
     description:
       'Intentional: this provider always throws, so you can see one failing widget reported on its own card while the rest of the dashboard keeps working.',
@@ -474,7 +516,8 @@ const baseProviders: WidgetProviders<ShopContext> = {
       footer: `and ${PRODUCTS.length - limit} more`,
     };
   },
-  revenue: ({ refreshCount, currency }, _definition, { view }) => {
+  revenue: ({ refreshCount, currency }, _definition, { view, filters }) => {
+    const share: number = channelShare(filters);
     if (view === 'trend') {
       return {
         kind: 'GRAPH',
@@ -489,7 +532,8 @@ const baseProviders: WidgetProviders<ShopContext> = {
               (label, index) => ({
                 label,
                 value: Math.round(
-                  400 + index * 130 + wobble(index + refreshCount, 180)
+                  (400 + index * 130 + wobble(index + refreshCount, 180)) *
+                    share
                 ),
               })
             ),
@@ -497,11 +541,11 @@ const baseProviders: WidgetProviders<ShopContext> = {
         ],
       };
     }
-    const current: number = 18420 + wobble(refreshCount + 1, 2500);
+    const current: number = (18420 + wobble(refreshCount + 1, 2500)) * share;
     return {
       kind: 'KPI',
       value: Math.round(current * 100) / 100,
-      previous: 16200,
+      previous: 16200 * share,
       format: 'currency',
       currency,
       label: 'Revenue this month',
@@ -532,7 +576,8 @@ const baseProviders: WidgetProviders<ShopContext> = {
     value: '30-day returns',
     label: 'Set by the store owner',
   }),
-  monthly: ({ refreshCount, currency }, _definition, { options }) => {
+  monthly: ({ refreshCount, currency }, _definition, { options, filters }) => {
+    const share: number = channelShare(filters);
     const months: number = Number(options['months'] ?? 8);
     return {
       kind: 'GRAPH',
@@ -546,7 +591,7 @@ const baseProviders: WidgetProviders<ShopContext> = {
           points: MONTHS.slice(0, months).map((label, index) => ({
             label,
             value: Math.round(
-              9000 + index * 1100 + wobble(index + refreshCount, 1500)
+              (9000 + index * 1100 + wobble(index + refreshCount, 1500)) * share
             ),
           })),
         },
