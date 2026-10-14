@@ -11,6 +11,7 @@ import {
 import {
   Dashboard,
   WidgetSettingsProvider,
+  useDashboardFilters,
   useStoredLayout,
   useWidgets,
   type CellFormatter,
@@ -47,6 +48,7 @@ import {
 } from './data/themes';
 import {
   ERROR_DEMO_KEY,
+  dashboardFilters,
   loadWidgetDetail,
   widgetDefinitions,
   widgetProviders,
@@ -241,11 +243,19 @@ export function App(): ReactElement {
       }),
     [allDefinitions, stored.layout, isAdmin]
   );
+  // Dashboard-level filters belong to the app (here: state). Only the widgets
+  // that name a filter reload when it changes.
+  const filterState = useDashboardFilters(dashboardFilters);
   const { widgets, refresh } = useWidgets(
     allDefinitions,
     widgetProviders,
     shopContext,
-    { optionValues, viewValues }
+    {
+      optionValues,
+      viewValues,
+      filters: dashboardFilters,
+      filterValues: filterState.values,
+    }
   );
 
   // The open detail view lives in the URL (?widget=recent-orders&sort=c2:desc),
@@ -463,6 +473,9 @@ export function App(): ReactElement {
                 onBackup={stored.setBackup}
                 editMode={editMode}
                 draggable
+                filters={dashboardFilters}
+                filterValues={filterState.values}
+                onFilterChange={filterState.setValues}
                 {...(builtTheme.ok && builtTheme.styles !== null
                   ? { theme: builtTheme.styles }
                   : {})}
@@ -551,7 +564,16 @@ const viewValues = useMemo(
   () => viewValuesFromLayout(all, stored.layout),
   [all, stored.layout]
 );
-const { widgets } = useWidgets(all, providers, context, { optionValues, viewValues });
+// Dashboard filters (a store, a period) are yours to keep: state, the URL or
+// storage. Widgets name the filters they use (filters: ['channel'], [] = none)
+// and providers read options.filters; only those widgets reload on a change.
+const filterState = useDashboardFilters(filters);
+const { widgets } = useWidgets(all, providers, context, {
+  optionValues,
+  viewValues,
+  filters,
+  filterValues: filterState.values,
+});
 
 // Keep the open detail view in the URL (?widget=orders&sort=total:desc&page=2):
 // parse it against the definitions, write it back with withDetailLink.
@@ -584,6 +606,9 @@ const accounts = {
   onLayoutChange={stored.setLayout}
   editMode="toggle"
   draggable
+  filters={filters}
+  filterValues={filterState.values}
+  onFilterChange={filterState.setValues}
   activePage={stored.activePage}
   onActivePageChange={stored.setActivePage}
   backup={stored.backup}
