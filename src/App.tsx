@@ -50,6 +50,7 @@ import {
   ERROR_DEMO_KEY,
   dashboardFilters,
   loadWidgetDetail,
+  setSimulatedOutage,
   widgetDefinitions,
   widgetProviders,
   type ShopContext,
@@ -78,6 +79,10 @@ const CELL_FORMATTERS: Readonly<Record<string, CellFormatter>> = {
 /** A missing or failing formatter shows the cell's text; this says why. */
 function reportFormatterProblem(problem: CellFormatterProblem): void {
   console.warn(problem.message);
+}
+
+function reportExportProblem(message: string): void {
+  console.warn(message);
 }
 
 function initialTheme(): Theme {
@@ -190,6 +195,7 @@ export function App(): ReactElement {
   const [isFilled, setIsFilled] = useState<boolean>(true);
   const [showErrorDemo, setShowErrorDemo] = useState<boolean>(false);
   const [refreshCount, setRefreshCount] = useState<number>(0);
+  const [outage, setOutage] = useState<boolean>(false);
   const activeDefinitions: readonly WidgetDefinition[] = useMemo(
     () =>
       widgetDefinitions
@@ -322,6 +328,11 @@ export function App(): ReactElement {
     setRefreshCount((count) => count + 1);
   }
 
+  function handleToggleOutage(): void {
+    setSimulatedOutage(!outage);
+    setOutage(!outage);
+  }
+
   function handleThemeChange(next: ThemeChoice): void {
     setThemeChoice(next);
     storeThemeChoice(next);
@@ -342,7 +353,7 @@ export function App(): ReactElement {
         <Section
           id="dashboard"
           title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme, light or dark mode and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card."
+          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme, light or dark mode and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card. Each card says how old its data is and has a refresh button; switch on “Simulate outage”, then refresh Revenue, Refund rate or Revenue by month to see a failed refresh keep the last good data with a badge. Tables, bar lists and charts have download buttons (CSV, plus SVG and PNG for charts), the detail dialogs have a Download CSV button, and printing the page gives a clean report."
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
@@ -405,6 +416,14 @@ export function App(): ReactElement {
               onClick={() => setIsFilled((current) => !current)}
             >
               Fill widgets: {isFilled ? 'on' : 'off'}
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              aria-pressed={outage}
+              onClick={handleToggleOutage}
+            >
+              Simulate outage: {outage ? 'on' : 'off'}
             </button>
           </div>
           <StorageNotice stored={stored} />
@@ -481,6 +500,10 @@ export function App(): ReactElement {
                   : {})}
                 overrideLocks={isAdmin}
                 onRetry={refresh}
+                freshness
+                onRefresh={refresh}
+                exportFormats={['csv', 'svg', 'png']}
+                onExportError={reportExportProblem}
                 loadDetail={loadDetail}
                 detail={detail}
                 onDetailChange={handleDetailChange}
@@ -568,7 +591,7 @@ const viewValues = useMemo(
 // storage. Widgets name the filters they use (filters: ['channel'], [] = none)
 // and providers read options.filters; only those widgets reload on a change.
 const filterState = useDashboardFilters(filters);
-const { widgets } = useWidgets(all, providers, context, {
+const { widgets, refresh } = useWidgets(all, providers, context, {
   optionValues,
   viewValues,
   filters,
@@ -600,8 +623,14 @@ const accounts = {
 };
 // <WidgetSettingsProvider formatters={{ statusBadge: ({ text, value }) => <Badge status={value}>{text}</Badge> }}>
 
+// Freshness: "Updated 2 minutes ago" and a refresh button on each card. A
+// failed refresh keeps the last good data and says so. Export: download
+// buttons on tables, bar lists and charts, and CSV in the detail view.
 <Dashboard
   widgets={widgets}
+  freshness
+  onRefresh={refresh}
+  exportFormats={['csv', 'svg', 'png']}
   layout={stored.layout}
   onLayoutChange={stored.setLayout}
   editMode="toggle"
