@@ -2,13 +2,32 @@
 
 ## Unreleased
 
+### Added (toolkit 0.27.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.27.0` (0.26.0
+  added Export; 0.27.0 adds Freshness).
+- **Freshness.** Each loaded card says how old its data is ("Updated 2 minutes
+  ago", kept current by the toolkit) and has a refresh button (`freshness`,
+  `onRefresh={refresh}`). A new **Simulate outage** toggle makes Revenue, Refund
+  rate and Revenue by month fail: refresh one and the card keeps its last good
+  data with a "Couldn't refresh. Showing data from ..." badge instead of turning
+  into an error card. A card that has never loaded still shows the error card.
+- **Export.** `exportFormats={['csv', 'svg', 'png']}` adds download buttons:
+  CSV on tables, bar lists and charts, SVG and PNG on charts (legend, title and
+  description included, painted as on screen), and a Download CSV button in the
+  detail dialogs (all rows matching the search and filters, not just the page).
+  `onExportError` logs a failed download to the console.
+- **Print.** Printing the page (or "Save as PDF") hides the controls and keeps
+  each card whole, from the toolkit's built-in print stylesheet.
+- The Use it in your app tab shows the new props.
+
 ### Added (toolkit 0.25.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.25.0`.
 - **Dashboard filters.** A **Sales channel** filter bar sits above the cards
   (`useDashboardFilters`, `Dashboard` `filters` / `filterValues` /
   `onFilterChange`, and the same filters and values passed to `useWidgets`).
-  Only Revenue and Monthly revenue name the filter, so only they reload (keeping
+  Only Revenue and Revenue by month name the filter, so only they reload (keeping
   what they show until the new data arrives); the other widgets declare
   `filters: []`. The providers read `options.filters`.
 - The Use it in your app tab shows the wiring.
