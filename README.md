@@ -68,6 +68,13 @@ a floating jump-to-top button and a copyright footer:
 - **Table controls**: "Most popular products" and "Recent orders" set
   `tableControls: true`, giving the card itself a search box and sortable
   headers over the rows it shows (the eye button opens the full list).
+- **Freshness**: each card shows "Updated 2 minutes ago" and has a refresh
+  button. **Simulate outage** makes Revenue, Refund rate and Revenue by month
+  fail, so refreshing one shows a failed refresh keeping the last good data
+  with a badge instead of an error card.
+- **Export and print**: download buttons on tables, bar lists and charts (CSV,
+  and SVG or PNG for charts), a Download CSV button in the detail dialogs, and a
+  print stylesheet for a clean "Save as PDF".
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.

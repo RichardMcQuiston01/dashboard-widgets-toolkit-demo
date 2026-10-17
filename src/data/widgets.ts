@@ -741,6 +741,25 @@ function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
   });
 }
 
+/** Widgets whose provider fails while the outage demo is on. */
+const OUTAGE_KEYS: ReadonlySet<string> = new Set([
+  'revenue',
+  'refunds',
+  'monthly',
+]);
+
+let simulatedOutage = false;
+
+/**
+ * Pretends the upstream API is down: Revenue, Refund rate and Revenue by month
+ * fail until it is switched off. Cards that already have data keep it when a
+ * refresh fails (the toolkit's freshness feature); a card that has never
+ * loaded shows the error card.
+ */
+export function setSimulatedOutage(active: boolean): void {
+  simulatedOutage = active;
+}
+
 function withLatency(
   providers: WidgetProviders<ShopContext>
 ): WidgetProviders<ShopContext> {
@@ -752,6 +771,9 @@ function withLatency(
         options
       ) => {
         await delay(LATENCY_MS[key] ?? 500, options.signal);
+        if (simulatedOutage && OUTAGE_KEYS.has(key)) {
+          throw new Error('Simulated outage: the upstream API returned 503.');
+        }
         return provider(context, definition, options);
       };
       return [key, slowProvider];
