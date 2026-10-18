@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Added (toolkit 0.29.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.29.0` ("Pages,
+  the rest").
+- **Swipe between pages.** On a touch screen, swipe left or right on the
+  dashboard to change page (Overview, Sales & traffic, Catalog). It never starts
+  on a button, link, field, drag handle or a table that scrolls sideways, so
+  scrolling and tapping work as before. Nothing to enable: it is on for any paged
+  dashboard.
+- **Drag a card onto a page tab.** While customizing, drag a card by its handle
+  over another page's tab: the tab is outlined (solid when the page has room,
+  dashed when the drop would be refused) and releasing moves the card there, the
+  same move as the Arrange menu's "Move to page".
+- **Release far-away pages.** The dashboard now loads with
+  `loadWhen: 'visible'`, so a page's widgets load the first time the page is
+  shown, and `release(farPageWidgetKeys(...))` drops the data of a page two pages
+  away. Go from Overview to Catalog and back and Overview's cards load again;
+  going to a neighbouring page and back does not.
+
 ### Added (toolkit 0.28.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.28.0` ("Detail
