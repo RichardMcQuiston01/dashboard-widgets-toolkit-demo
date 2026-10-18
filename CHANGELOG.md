@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added (toolkit 0.28.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.28.0` ("Detail
+  view, the rest").
+- **Recent orders** detail view is now in server mode: `loadDetail` receives the
+  `query` and answers one page plus `totalRows` (the demo's `queryRows` stands in
+  for a database, after a short delay). It offers `pageSizes: [10, 25, 50]` and
+  `columnVisibility`; the toolkit remembers the pages already loaded, so going
+  back to one shows it at once (marked busy) while it is asked again. Its
+  Download CSV button asks `onExportDetail` for every matching row and leaves
+  out hidden columns. The open view's page size and hidden columns appear in the
+  URL (`size`, `hide`).
+- **Revenue by month** now has `detail: true`: its detail view is the chart's
+  data as a searchable, sortable table, with no loader (`deriveDetailData` for
+  charts). **Most popular products** gained a Columns menu.
+
 ### Added (toolkit 0.27.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.27.0` (0.26.0

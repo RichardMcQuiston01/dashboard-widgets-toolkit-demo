@@ -2,8 +2,10 @@ import {
   defineWidget,
   emptyWidget,
   formatValue,
+  queryRows,
   type DashboardFilter,
   type DetailData,
+  type DetailQuery,
   type TableWidgetData,
   type WidgetContext,
   type WidgetDefinition,
@@ -117,6 +119,9 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     fill: 'both',
     sortOrder: 50,
     width: 6,
+    // A chart's detail view is its "View as table" with search, sorting and
+    // paging, built from the card's own data: no detail loader needed.
+    detail: true,
     options: [
       {
         key: 'months',
@@ -163,7 +168,8 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 65,
     width: 8,
     minWidth: 6,
-    detail: { pageSize: 10 },
+    // A Columns menu: viewers hide columns in the detail view and in its CSV.
+    detail: { pageSize: 10, columnVisibility: true },
     tableControls: true,
     // Other ways to show the same rows. The cells carry numeric `value`s, which
     // the conversions read; switching views never reloads.
@@ -267,7 +273,16 @@ export const widgetDefinitions: readonly WidgetDefinition[] = [
     sortOrder: 90,
     width: 6,
     minWidth: 6,
-    detail: { title: 'All orders', pageSize: 10 },
+    // Server mode (the demo's loader plays the server, with a delay): the
+    // detail view asks for one page at a time, remembers the pages it has
+    // loaded, and offers a page-size choice and a Columns menu.
+    detail: {
+      title: 'All orders',
+      pageSize: 10,
+      pageSizes: [10, 25, 50],
+      columnVisibility: true,
+      mode: 'server',
+    },
     tableControls: true,
     views: [
       {
@@ -791,7 +806,8 @@ export const widgetProviders: WidgetProviders<ShopContext> =
 export async function loadWidgetDetail(
   key: string,
   { currency, locale }: Pick<ShopContext, 'currency' | 'locale'>,
-  signal: AbortSignal
+  signal: AbortSignal,
+  query?: DetailQuery
 ): Promise<DetailData | undefined> {
   await delay(500, signal);
   const money = (amount: number): string =>
@@ -812,8 +828,8 @@ export async function loadWidgetDetail(
           { text: money(sold * price), value: sold * price },
         ]),
       };
-    case 'recent-orders':
-      return {
+    case 'recent-orders': {
+      const everything: DetailData = {
         columns: [
           { key: 'order', label: 'Order' },
           { key: 'customer', label: 'Customer', filterable: true },
@@ -825,6 +841,18 @@ export async function loadWidgetDetail(
           { text: money(total), value: total },
         ]),
       };
+      // Server mode: answer only the page asked for, plus how many rows match.
+      // A real server would do this in its database; here the toolkit's
+      // `queryRows` stands in for it.
+      if (query === undefined) return everything;
+      const page = queryRows(everything, query, locale);
+      if (!page.ok) throw new Error(page.error);
+      return {
+        columns: everything.columns,
+        rows: page.value.rows,
+        totalRows: page.value.totalRows,
+      };
+    }
     case 'countries':
       return {
         columns: [
