@@ -1,6 +1,8 @@
 import {
   EMPTY_LAYOUT,
   optionValuesFromLayout,
+  farPageWidgetKeys,
+  pageList,
   parseDetailLink,
   viewValuesFromLayout,
   withClones,
@@ -253,17 +255,29 @@ export function App(): ReactElement {
   // Dashboard-level filters belong to the app (here: state). Only the widgets
   // that name a filter reload when it changes.
   const filterState = useDashboardFilters(dashboardFilters);
-  const { widgets, refresh } = useWidgets(
+  // loadWhen 'visible': a widget loads the first time its card is on screen,
+  // so the other pages cost nothing until they are shown, and `release` can
+  // drop the data of pages the viewer left far behind (see below).
+  const { widgets, refresh, release, gridRef } = useWidgets(
     allDefinitions,
     widgetProviders,
     shopContext,
     {
+      loadWhen: 'visible',
       optionValues,
       viewValues,
       filters: dashboardFilters,
       filterValues: filterState.values,
     }
   );
+  // With three pages, a page two away from the one in view is released: its
+  // payloads are dropped and it loads again when the viewer returns to it.
+  const pageInView: string | undefined =
+    stored.activePage ?? pageList(stored.layout)[0]?.key;
+  useEffect(() => {
+    if (pageInView === undefined) return;
+    release(farPageWidgetKeys(allDefinitions, stored.layout, pageInView, 1));
+  }, [release, allDefinitions, stored.layout, pageInView]);
 
   // The open detail view lives in the URL (?widget=recent-orders&sort=c2:desc),
   // beside the tab in the hash. The query string is the state: it is parsed
@@ -487,7 +501,7 @@ export function App(): ReactElement {
               </select>
             </label>
           </SettingsDialog>
-          <div>
+          <div ref={gridRef}>
             <WidgetSettingsProvider
               locale={localeOption.locale}
               linkTarget="_blank"
@@ -555,7 +569,7 @@ export function App(): ReactElement {
           <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
             <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
 
-import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones, parseDetailLink, withDetailLink } from '@richardmcquiston01/dashboard-widgets-toolkit';
+import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones, parseDetailLink, withDetailLink, farPageWidgetKeys } from '@richardmcquiston01/dashboard-widgets-toolkit';
 import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
 import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
           </pre>
@@ -607,12 +621,18 @@ const viewValues = useMemo(
 // storage. Widgets name the filters they use (filters: ['channel'], [] = none)
 // and providers read options.filters; only those widgets reload on a change.
 const filterState = useDashboardFilters(filters);
-const { widgets, refresh } = useWidgets(all, providers, context, {
+const { widgets, refresh, release, gridRef } = useWidgets(all, providers, context, {
+  loadWhen: 'visible', // a widget loads when its card first shows (wrap Dashboard in <div ref={gridRef}>)
   optionValues,
   viewValues,
   filters,
   filterValues: filterState.values,
 });
+// Optional: drop the data of pages the viewer left far behind. It loads again
+// when they return to that page (from your cache first, if you pass one).
+useEffect(() => {
+  release(farPageWidgetKeys(all, stored.layout, stored.activePage ?? firstPageKey, 1));
+}, [release, all, stored.layout, stored.activePage]);
 
 // Keep the open detail view in the URL (?widget=orders&sort=total:desc&page=2):
 // parse it against the definitions, write it back with withDetailLink.

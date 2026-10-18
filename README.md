@@ -81,6 +81,10 @@ a floating jump-to-top button and a copyright footer:
   once when you return to them, and the page size and hidden columns are in the
   URL (`size`, `hide`). "Revenue by month" (a chart) opens a detail table built
   from its own data, and "Most popular products" has a Columns menu.
+- **Pages**: the three pages swipe on a touch screen, a card dragged by its
+  handle onto another page's tab moves there (while customizing), and a page two
+  away from the one in view is released and loads again when you come back
+  (`loadWhen: 'visible'`, `release`, `farPageWidgetKeys`).
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
