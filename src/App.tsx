@@ -16,6 +16,7 @@ import {
   useWidgets,
   type CellFormatter,
   type CellFormatterProblem,
+  type DetailExportRequest,
   type DetailLoader,
   type UseStoredLayoutResult,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
@@ -298,11 +299,25 @@ export function App(): ReactElement {
 
   // The data behind each card's "View" button, loaded only when it is opened.
   const loadDetail: DetailLoader = useCallback(
-    (definition, { signal }) =>
+    (definition, { signal, query }) =>
       loadWidgetDetail(
         definition.sourceKey ?? definition.key,
         localeOption,
-        signal
+        signal,
+        query
+      ),
+    [localeOption]
+  );
+
+  // Server-mode detail views hold one page, so their Download CSV button asks
+  // for every row that matches the search and filters instead.
+  const exportDetail = useCallback(
+    (request: DetailExportRequest) =>
+      loadWidgetDetail(
+        request.widgetKey,
+        localeOption,
+        new AbortController().signal,
+        request.query
       ),
     [localeOption]
   );
@@ -505,6 +520,7 @@ export function App(): ReactElement {
                 exportFormats={['csv', 'svg', 'png']}
                 onExportError={reportExportProblem}
                 loadDetail={loadDetail}
+                onExportDetail={exportDetail}
                 detail={detail}
                 onDetailChange={handleDetailChange}
               />
