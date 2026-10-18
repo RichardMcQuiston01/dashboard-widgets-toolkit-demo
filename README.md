@@ -75,6 +75,12 @@ a floating jump-to-top button and a copyright footer:
 - **Export and print**: download buttons on tables, bar lists and charts (CSV,
   and SVG or PNG for charts), a Download CSV button in the detail dialogs, and a
   print stylesheet for a clean "Save as PDF".
+- **Detail view, the rest**: "Recent orders" opens a server-mode detail view
+  (the demo's loader plays the server, with a delay) with a **Rows per page**
+  choice (10, 25, 50) and a **Columns** menu; pages already loaded come back at
+  once when you return to them, and the page size and hidden columns are in the
+  URL (`size`, `hide`). "Revenue by month" (a chart) opens a detail table built
+  from its own data, and "Most popular products" has a Columns menu.
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
