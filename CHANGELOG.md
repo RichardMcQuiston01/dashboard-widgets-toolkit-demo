@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.30.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.30.0` ("Widget
+  Builder, headless"). The release adds the `./builder` subpath and
+  `WidgetDefinition.source` / `providerKeyOf`; the demo does not use them yet,
+  and nothing on screen changes. The admin screen for it is the next step.
+
 ### Added (toolkit 0.29.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.29.0` ("Pages,
