@@ -81,6 +81,11 @@ a floating jump-to-top button and a copyright footer:
   once when you return to them, and the page size and hidden columns are in the
   URL (`size`, `hide`). "Revenue by month" (a chart) opens a detail table built
   from its own data, and "Most popular products" has a Columns menu.
+- **Widget Builder** (its own tab): make widgets from a form. Pick one of three
+  described data sources, choose which options viewers get and their defaults,
+  add views, set the width and lock, and watch a preview drawn from sample data.
+  Changes the source can't serve are refused with a reason; saved widgets are
+  JSON in this browser and load through the demo's own providers.
 - **Pages**: the three pages swipe on a touch screen, a card dragged by its
   handle onto another page's tab moves there (while customizing), and a page two
   away from the one in view is released and loads again when you come back
