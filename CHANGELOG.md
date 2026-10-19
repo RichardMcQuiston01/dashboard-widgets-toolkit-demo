@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Added (toolkit 0.31.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.31.0` ("Widget
+  Builder", headless in 0.30.0 and the React building blocks in 0.31.0).
+- **Widget Builder tab.** An admin screen for making widgets without code. Three
+  of the demo's providers (Orders by country, Recent orders, Low stock) are
+  described once with `defineSource` (`src/data/builderSources.ts`): what each
+  returns, which options it understands, whether it has a detail view, and a
+  sample payload. The form (`src/components/WidgetBuilder.tsx`) can only combine
+  those choices: `newWidget` starts a widget over a source, `useWidgetDraft` holds
+  the form's state, `WidgetOptionsForm` exposes the source's options with the
+  defaults you pick, `WidgetViewsForm` adds the conversions its columns allow, and
+  `WidgetPreview` draws the widget from the sample as you type. A change the
+  source can't serve (a width outside 2 to 12, an empty title, a default outside
+  an option's bounds) is refused with its reason. Saved widgets are kept in this
+  browser with `serializeDefinitions`, read back with `parseDefinitions` (a row
+  that no longer fits its source is skipped with the reason) and shown on a
+  dashboard at the bottom of the tab, loaded through the same providers as the
+  Interactive dashboard (`WidgetDefinition.source`, `providerKeyOf`). The tab
+  starts with two examples; "Restore the examples" brings them back.
+
 ### Added (toolkit 0.29.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.29.0` ("Pages,

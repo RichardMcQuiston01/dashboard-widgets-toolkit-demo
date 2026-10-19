@@ -40,6 +40,7 @@ import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
 import { Playground } from './components/Playground';
 import { Section } from './components/Section';
+import { WidgetBuilder } from './components/WidgetBuilder';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
 import { LAYOUT_SCOPE, PAGED_LAYOUT, layoutPersistence } from './data/layouts';
 import {
@@ -96,6 +97,7 @@ function initialTheme(): Theme {
 
 const TAB_IDS: readonly string[] = [
   'dashboard',
+  'builder',
   'overview',
   'validation',
   'usage',
@@ -540,6 +542,26 @@ export function App(): ReactElement {
               />
             </WidgetSettingsProvider>
           </div>
+        </Section>
+      ),
+    },
+    {
+      id: 'builder',
+      label: 'Widget Builder',
+      panel: (
+        <Section
+          id="builder"
+          title="Widget Builder"
+          description="An admin screen for making widgets without code. Each data source is described once in code (what it returns and what it can be asked for); the form below can only combine those choices. Pick a source, name the widget, then choose which of the source's options viewers get (and their defaults), add alternate views, set the width and lock, and watch the preview as you type. A change the source can't serve is refused with its reason. Saved widgets are kept in this browser as JSON and appear on the dashboard at the bottom, loaded through the same providers as the Interactive dashboard."
+        >
+          <WidgetBuilder
+            context={shopContext}
+            theme={
+              builtTheme.ok && builtTheme.styles !== null
+                ? builtTheme.styles
+                : undefined
+            }
+          />
         </Section>
       ),
     },
