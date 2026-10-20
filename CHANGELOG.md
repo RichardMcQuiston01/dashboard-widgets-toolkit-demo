@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.33.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.33.0` (adjacent
+  page prefetch, the `/vue` renderers, and the chart model, labels and palette
+  moved into the core). No code changes were needed: the demo only uses
+  `/react`, whose exports are unchanged.
+
 ### Added (toolkit 0.32.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.32.0` ("Widget
