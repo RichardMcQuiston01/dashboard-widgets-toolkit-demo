@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.35.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.35.0` (Vue
+  Options dialog and clones). No code changes were needed: the demo only uses
+  `/react`, whose exports are unchanged.
+
 ### Changed (toolkit 0.33.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.33.0` (adjacent
