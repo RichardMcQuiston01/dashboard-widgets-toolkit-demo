@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.35.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.35.0` (Vue
+  Options dialog and clones). No code changes were needed: the demo only uses
+  `/react`, whose exports are unchanged.
+
+### Changed (toolkit 0.33.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.33.0` (adjacent
+  page prefetch, the `/vue` renderers, and the chart model, labels and palette
+  moved into the core). No code changes were needed: the demo only uses
+  `/react`, whose exports are unchanged.
+
+### Added (toolkit 0.32.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.32.0` ("Widget
+  Builder, viewer-created widgets").
+- **Viewer mode in the Widget Builder tab.** "Building as" switches between
+  Administrator (as before) and Viewer. The viewer's `BuilderPolicy`
+  (`viewerPolicy` in `src/data/builderSources.ts`) allows two of the three
+  sources, three widgets, two options and one view each, and only the title,
+  description, width and first view; keys must start with `u-demo-`. The source
+  picker uses `viewerSources`, new keys come from `viewerWidgetKey`,
+  `useWidgetDraft` takes the policy (so the form hides what the viewer may not
+  change and stops options and views at their limits), and the viewer's widgets
+  are read back with `parseViewerDefinitions`. The demo has no server, so Save
+  runs `validateViewerSave` as the server would and shows the answer: a fourth
+  widget is refused with the quota, and "Try to cheat" sends a tampered save
+  (roles and a lock, or someone else's key) and shows the refusal. The viewer's
+  widgets are stored apart from the administrator's.
+
 ### Added (toolkit 0.31.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.31.0` ("Widget

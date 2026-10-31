@@ -1,10 +1,13 @@
 import {
+  defineBuilderPolicy,
   defineSource,
   exposeOption,
   newWidget,
   parseDefinitions,
+  parseViewerDefinitions,
   serializeDefinitions,
   updateWidget,
+  type BuilderPolicy,
   type SourceDescription,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/builder';
 import type { WidgetDefinition } from '@richardmcquiston01/dashboard-widgets-toolkit';
@@ -256,6 +259,75 @@ export function writeBuilderWidgets(
 export function clearBuilderWidgets(): string | undefined {
   try {
     window.localStorage.removeItem(STORAGE_KEY);
+    return undefined;
+  } catch (cause: unknown) {
+    return `Could not clear localStorage: ${String(cause)}`;
+  }
+}
+
+/**
+ * What the demo's signed-in viewer may do. A real app builds this on the server
+ * from the authenticated user (the prefix from their id), never from the
+ * request. Two of the three sources, three widgets, and only the default
+ * editable fields (title, description, width, first view); `detail` and `locked`
+ * stay off.
+ */
+export const viewerPolicy: BuilderPolicy = defineBuilderPolicy({
+  sources: ['countries', 'recent-orders'],
+  maxWidgets: 3,
+  keyPrefix: 'u-demo-',
+  maxOptions: 2,
+  maxViews: 1,
+});
+
+const VIEWER_STORAGE_KEY = 'dwt-demo:viewer-widgets';
+
+/** Reads the viewer's own widgets, checked against their policy. */
+export function readViewerWidgets(): StoredBuilderWidgets {
+  let text: string | null;
+  try {
+    text = window.localStorage.getItem(VIEWER_STORAGE_KEY);
+  } catch (cause: unknown) {
+    return {
+      definitions: [],
+      skipped: [],
+      error: `Could not read "${VIEWER_STORAGE_KEY}" from localStorage: ${String(cause)}`,
+    };
+  }
+  if (text === null) return { definitions: [], skipped: [] };
+  const parsed = parseViewerDefinitions(text, builderSources, viewerPolicy);
+  if (!parsed.ok) {
+    return {
+      definitions: [],
+      skipped: [],
+      error: `The saved widgets could not be read: ${parsed.error}`,
+    };
+  }
+  return {
+    definitions: parsed.value.definitions,
+    skipped: parsed.value.skipped,
+  };
+}
+
+/** Saves the viewer's widgets. Returns a message when that fails. */
+export function writeViewerWidgets(
+  definitions: readonly WidgetDefinition[]
+): string | undefined {
+  try {
+    window.localStorage.setItem(
+      VIEWER_STORAGE_KEY,
+      serializeDefinitions(definitions)
+    );
+    return undefined;
+  } catch (cause: unknown) {
+    return `Could not save to localStorage: ${String(cause)}`;
+  }
+}
+
+/** Forgets the viewer's widgets. */
+export function clearViewerWidgets(): string | undefined {
+  try {
+    window.localStorage.removeItem(VIEWER_STORAGE_KEY);
     return undefined;
   } catch (cause: unknown) {
     return `Could not clear localStorage: ${String(cause)}`;

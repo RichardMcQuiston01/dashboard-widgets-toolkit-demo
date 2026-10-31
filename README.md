@@ -86,6 +86,9 @@ a floating jump-to-top button and a copyright footer:
   add views, set the width and lock, and watch a preview drawn from sample data.
   Changes the source can't serve are refused with a reason; saved widgets are
   JSON in this browser and load through the demo's own providers.
+  Switch to **Viewer** to see the same screen under a policy (allowed sources, a
+  widget quota, only some fields editable): the server's check, `validateViewerSave`,
+  refuses anything more, and a button tries to cheat it.
 - **Pages**: the three pages swipe on a touch screen, a card dragged by its
   handle onto another page's tab moves there (while customizing), and a page two
   away from the one in view is released and loads again when you come back

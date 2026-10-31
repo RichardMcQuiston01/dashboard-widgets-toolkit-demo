@@ -5,6 +5,11 @@ import {
 import {
   newWidget,
   uniqueWidgetKey,
+  validateViewerSave,
+  viewerSources,
+  viewerWidgetKey,
+  type BuilderPolicy,
+  type PatchableField,
   type SourceDescription,
 } from '@richardmcquiston01/dashboard-widgets-toolkit/builder';
 import {
@@ -31,9 +36,13 @@ import {
 import {
   builderSources,
   clearBuilderWidgets,
+  clearViewerWidgets,
   findBuilderSource,
   readBuilderWidgets,
+  readViewerWidgets,
+  viewerPolicy,
   writeBuilderWidgets,
+  writeViewerWidgets,
   type StoredBuilderWidgets,
 } from '../data/builderSources';
 import {
@@ -75,7 +84,11 @@ interface EditorProps {
   readonly definition: WidgetDefinition;
   readonly isNew: boolean;
   readonly theme: WidgetThemeStyles | undefined;
-  readonly onSave: (definition: WidgetDefinition) => void;
+  /** A viewer's policy: the form follows it, and Save asks the "server" first. */
+  readonly policy: BuilderPolicy | undefined;
+  /** The viewer's stored widgets, for the quota the server checks. */
+  readonly owned: readonly WidgetDefinition[];
+  readonly onSave: (definition: WidgetDefinition, note?: string) => void;
   readonly onCancel: () => void;
 }
 
@@ -85,10 +98,19 @@ function WidgetEditor({
   definition,
   isNew,
   theme,
+  policy,
+  owned,
   onSave,
   onCancel,
 }: EditorProps): ReactElement {
-  const draft: WidgetDraft = useWidgetDraft(source, definition);
+  const draft: WidgetDraft = useWidgetDraft(
+    source,
+    definition,
+    policy === undefined ? {} : { policy }
+  );
+  const can = (field: PatchableField): boolean =>
+    draft.editable.includes(field);
+  const [serverSays, setServerSays] = useState<string | undefined>(undefined);
   const [previewView, setPreviewView] = useState<string | undefined>(undefined);
   const [saveError, setSaveError] = useState<string | undefined>(undefined);
   const id: string = useId();
@@ -120,7 +142,46 @@ function WidgetEditor({
       return;
     }
     setSaveError(undefined);
-    onSave(committed.value);
+    if (policy === undefined) {
+      onSave(committed.value);
+      return;
+    }
+    // The demo has no server, so ask the same check a server would run.
+    const verdict = validateViewerSave({
+      policy,
+      sources: builderSources,
+      submitted: committed.value,
+      previous: isNew ? undefined : definition,
+      owned,
+    });
+    if (!verdict.ok) {
+      setSaveError(`The server refused it: ${verdict.error}`);
+      return;
+    }
+    onSave(
+      verdict.value,
+      'The server’s check (validateViewerSave) accepted it.'
+    );
+  }
+
+  /** What a tampered browser could send; the server's check answers. */
+  function tamper(kind: 'roles' | 'key'): void {
+    const sent: unknown =
+      kind === 'roles'
+        ? { ...draft.definition, roles: ['admin'], locked: true }
+        : { ...draft.definition, key: 'u-someone-else-widget' };
+    const verdict = validateViewerSave({
+      policy: policy as BuilderPolicy,
+      sources: builderSources,
+      submitted: sent,
+      previous: isNew ? undefined : definition,
+      owned,
+    });
+    setServerSays(
+      verdict.ok
+        ? 'The server accepted it (unexpected).'
+        : `The server refused it: ${verdict.error}`
+    );
   }
 
   return (
@@ -154,59 +215,63 @@ function WidgetEditor({
               </p>
             )}
           </div>
-          <div>
-            <label htmlFor={`${id}-desc`} className="text-sm font-medium">
-              Description
-            </label>
-            <input
-              id={`${id}-desc`}
-              type="text"
-              className={fieldClass}
-              value={description}
-              onChange={(event) =>
-                draft.setField(
-                  'description',
-                  event.target.value === '' ? undefined : event.target.value
-                )
-              }
-            />
-            {problems['description'] !== undefined && (
-              <p role="alert" className={errorClass}>
-                {problems['description']}
-              </p>
-            )}
-          </div>
-          <div>
-            <label htmlFor={`${id}-width`} className="text-sm font-medium">
-              Width
-            </label>
-            <select
-              id={`${id}-width`}
-              className={fieldClass}
-              value={width === undefined ? '' : String(width)}
-              onChange={(event) =>
-                draft.setField(
-                  'width',
-                  event.target.value === ''
-                    ? undefined
-                    : Number(event.target.value)
-                )
-              }
-            >
-              <option value="">Default</option>
-              {WIDTHS.map((option) => (
-                <option key={option} value={String(option)}>
-                  {option} of 12 columns
-                </option>
-              ))}
-            </select>
-            {problems['width'] !== undefined && (
-              <p role="alert" className={errorClass}>
-                {problems['width']}
-              </p>
-            )}
-          </div>
-          {hasDetail(source) && (
+          {can('description') && (
+            <div>
+              <label htmlFor={`${id}-desc`} className="text-sm font-medium">
+                Description
+              </label>
+              <input
+                id={`${id}-desc`}
+                type="text"
+                className={fieldClass}
+                value={description}
+                onChange={(event) =>
+                  draft.setField(
+                    'description',
+                    event.target.value === '' ? undefined : event.target.value
+                  )
+                }
+              />
+              {problems['description'] !== undefined && (
+                <p role="alert" className={errorClass}>
+                  {problems['description']}
+                </p>
+              )}
+            </div>
+          )}
+          {can('width') && (
+            <div>
+              <label htmlFor={`${id}-width`} className="text-sm font-medium">
+                Width
+              </label>
+              <select
+                id={`${id}-width`}
+                className={fieldClass}
+                value={width === undefined ? '' : String(width)}
+                onChange={(event) =>
+                  draft.setField(
+                    'width',
+                    event.target.value === ''
+                      ? undefined
+                      : Number(event.target.value)
+                  )
+                }
+              >
+                <option value="">Default</option>
+                {WIDTHS.map((option) => (
+                  <option key={option} value={String(option)}>
+                    {option} of 12 columns
+                  </option>
+                ))}
+              </select>
+              {problems['width'] !== undefined && (
+                <p role="alert" className={errorClass}>
+                  {problems['width']}
+                </p>
+              )}
+            </div>
+          )}
+          {hasDetail(source) && can('detail') && (
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -221,20 +286,22 @@ function WidgetEditor({
               Offer a detail view (the eye button)
             </label>
           )}
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={locked}
-              onChange={(event) =>
-                draft.setField(
-                  'locked',
-                  event.target.checked ? true : undefined
-                )
-              }
-            />
-            Lock it: viewers can’t move, hide or change it
-          </label>
-          {views.length > 0 && (
+          {can('locked') && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={locked}
+                onChange={(event) =>
+                  draft.setField(
+                    'locked',
+                    event.target.checked ? true : undefined
+                  )
+                }
+              />
+              Lock it: viewers can’t move, hide or change it
+            </label>
+          )}
+          {views.length > 0 && can('defaultView') && (
             <div>
               <label htmlFor={`${id}-view`} className="text-sm font-medium">
                 Shown first
@@ -335,6 +402,36 @@ function WidgetEditor({
           Cancel
         </button>
       </div>
+      {policy !== undefined && (
+        <div className="mt-4 rounded-md border border-brand-200 p-3 text-sm dark:border-brand-700">
+          <p className="font-medium">Try to cheat</p>
+          <p className="mt-1 text-slate-600 dark:text-slate-400">
+            The form only offers what your policy allows, but a browser can send
+            anything. Send these to the server’s check:
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={buttonClass}
+              onClick={() => tamper('roles')}
+            >
+              Add roles and a lock
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
+              onClick={() => tamper('key')}
+            >
+              Use someone else’s key
+            </button>
+          </div>
+          {serverSays !== undefined && (
+            <p role="status" className="mt-2">
+              {serverSays}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -412,20 +509,32 @@ type Editing =
   | { readonly kind: 'new'; readonly definition: WidgetDefinition }
   | { readonly kind: 'edit'; readonly definition: WidgetDefinition };
 
-/** The Widget Builder tab: create, edit and delete widgets over the demo's sources. */
-export function WidgetBuilder({
+type Mode = 'admin' | 'viewer';
+
+interface WorkspaceProps extends WidgetBuilderProps {
+  readonly mode: Mode;
+}
+
+/** One mode's widgets: create, edit and delete over the demo's sources. */
+function BuilderWorkspace({
+  mode,
   context,
   theme,
-}: WidgetBuilderProps): ReactElement {
-  const [stored, setStored] =
-    useState<StoredBuilderWidgets>(readBuilderWidgets);
+}: WorkspaceProps): ReactElement {
+  const isViewer: boolean = mode === 'viewer';
+  const policy: BuilderPolicy | undefined = isViewer ? viewerPolicy : undefined;
+  const available: readonly SourceDescription[] = isViewer
+    ? viewerSources(viewerPolicy, builderSources)
+    : builderSources;
+  const [stored, setStored] = useState<StoredBuilderWidgets>(
+    isViewer ? readViewerWidgets : readBuilderWidgets
+  );
+  const [notice, setNotice] = useState<string | undefined>(undefined);
   const [definitions, setDefinitions] = useState<readonly WidgetDefinition[]>(
     stored.definitions
   );
   const [editing, setEditing] = useState<Editing | undefined>(undefined);
-  const [sourceKey, setSourceKey] = useState<string>(
-    builderSources[0]?.key ?? ''
-  );
+  const [sourceKey, setSourceKey] = useState<string>(available[0]?.key ?? '');
   const [newTitle, setNewTitle] = useState<string>('');
   const [createError, setCreateError] = useState<string | undefined>(undefined);
   const [storageError, setStorageError] = useState<string | undefined>(
@@ -442,7 +551,9 @@ export function WidgetBuilder({
 
   function persist(next: readonly WidgetDefinition[]): void {
     setDefinitions(next);
-    setStorageError(writeBuilderWidgets(next));
+    setStorageError(
+      isViewer ? writeViewerWidgets(next) : writeBuilderWidgets(next)
+    );
   }
 
   function create(): void {
@@ -453,7 +564,9 @@ export function WidgetBuilder({
     }
     const title: string = newTitle.trim() === '' ? source.label : newTitle;
     const created = newWidget(source, {
-      key: uniqueWidgetKey(`builder-${title.toLowerCase()}`, takenKeys),
+      key: isViewer
+        ? viewerWidgetKey(viewerPolicy, title, takenKeys)
+        : uniqueWidgetKey(`builder-${title.toLowerCase()}`, takenKeys),
       title,
     });
     if (!created.ok) {
@@ -465,7 +578,8 @@ export function WidgetBuilder({
     setEditing({ kind: 'new', definition: created.value });
   }
 
-  function save(definition: WidgetDefinition): void {
+  function save(definition: WidgetDefinition, note?: string): void {
+    setNotice(note);
     const exists: boolean = definitions.some(
       (candidate) => candidate.key === definition.key
     );
@@ -485,8 +599,13 @@ export function WidgetBuilder({
   }
 
   function restoreExamples(): void {
-    const problem: string | undefined = clearBuilderWidgets();
-    const fresh: StoredBuilderWidgets = readBuilderWidgets();
+    const problem: string | undefined = isViewer
+      ? clearViewerWidgets()
+      : clearBuilderWidgets();
+    const fresh: StoredBuilderWidgets = isViewer
+      ? readViewerWidgets()
+      : readBuilderWidgets();
+    setNotice(undefined);
     setStored(fresh);
     setDefinitions(fresh.definitions);
     setEditing(undefined);
@@ -511,7 +630,7 @@ export function WidgetBuilder({
             value={sourceKey}
             onChange={(event) => setSourceKey(event.target.value)}
           >
-            {builderSources.map((source) => (
+            {available.map((source) => (
               <option key={source.key} value={source.key}>
                 {source.label} ({source.kind})
               </option>
@@ -535,9 +654,27 @@ export function WidgetBuilder({
           New widget
         </button>
         <button type="button" className={buttonClass} onClick={restoreExamples}>
-          Restore the examples
+          {isViewer ? 'Delete all mine' : 'Restore the examples'}
         </button>
       </div>
+      {isViewer && (
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Signed in as a viewer. Your policy: {viewerPolicy.sources.length} of{' '}
+          {builderSources.length} sources, up to {viewerPolicy.maxWidgets}{' '}
+          widgets ({definitions.length} used), at most {viewerPolicy.maxOptions}{' '}
+          options and {viewerPolicy.maxViews} view each, and only the title,
+          description, width and first view to change. Keys start with{' '}
+          <code>{viewerPolicy.keyPrefix}</code>.
+        </p>
+      )}
+      {notice !== undefined && (
+        <p
+          role="status"
+          className="text-sm text-emerald-700 dark:text-emerald-300"
+        >
+          Saved. {notice}
+        </p>
+      )}
       {createError !== undefined && (
         <p role="alert" className={errorClass}>
           {createError}
@@ -614,6 +751,8 @@ export function WidgetBuilder({
           definition={editing.definition}
           isNew={editing.kind === 'new'}
           theme={theme}
+          policy={policy}
+          owned={definitions}
           onSave={save}
           onCancel={() => setEditing(undefined)}
         />
@@ -643,6 +782,34 @@ export function WidgetBuilder({
           theme={theme}
         />
       </section>
+    </div>
+  );
+}
+
+/** The Widget Builder tab: an administrator's builder and a viewer's, over the demo's sources. */
+export function WidgetBuilder(props: WidgetBuilderProps): ReactElement {
+  const [mode, setMode] = useState<Mode>('admin');
+  return (
+    <div className="flex flex-col gap-6">
+      <div
+        role="group"
+        aria-label="Who is building"
+        className="flex flex-wrap items-center gap-2"
+      >
+        <span className="text-sm font-medium">Building as</span>
+        {(['admin', 'viewer'] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={mode === option}
+            className={`${buttonClass} aria-pressed:border-brand-600 aria-pressed:bg-brand-600 aria-pressed:text-white`}
+            onClick={() => setMode(option)}
+          >
+            {option === 'admin' ? 'Administrator' : 'Viewer'}
+          </button>
+        ))}
+      </div>
+      <BuilderWorkspace key={mode} mode={mode} {...props} />
     </div>
   );
 }
