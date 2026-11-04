@@ -176,9 +176,7 @@ through pull requests; `dev` merges into `main` after testing.
 
 If this app, code, or repository has helped you or someone you know, please consider donating. I appreciate any help to offset the costs of development and/or AI Credits.
 
-[**Donate via PayPal**](https://www.paypal.com/ncp/payment/3PW7XW8F4ZSTG), or scan:
-
-<a href="https://www.paypal.com/ncp/payment/3PW7XW8F4ZSTG"><img src="./donate.png" alt="Donate via PayPal" width="180"></a>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P1V529Z7ZP)
 
 ## License
 
