@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.35.1)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.35.1` (donate
+  link and `funding` URL switched to Ko-fi). No code changes were needed.
+- `DonateCard` comments now say Ko-fi instead of PayPal.
+
 ### Changed (toolkit 0.35.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.35.0` (Vue
