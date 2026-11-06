@@ -50,11 +50,14 @@ npm run format:check # Prettier
 ### Examples
 
 The demo is a Vite + React + TypeScript + Tailwind CSS single page app with
-four tabs (deep-linkable, e.g. `#validation`) under a header that keeps the title and tabs
+three tabs (deep-linkable, e.g. `#builder`) under a header that keeps the title and tabs
 in view while the description and links fold away as you scroll,
-a floating jump-to-top button and a copyright footer:
+a floating payload-validation button, a floating jump-to-top button and a
+copyright footer. Each of the first two tabs opens a short introduction in a
+dialog shortly after it first shows (once per page load; the info button beside
+the tab's controls opens it again):
 
-- **Interactive dashboard** tab: all seven widget kinds plus an empty state,
+- **Interactive dashboard** tab: all seven widget types plus an empty state,
   loaded with the `useWidgets` hook so each card fills in on its own as its
   data arrives (the demo gives every provider a different fake latency).
   Move, hide and minimize cards (minimized cards wait in a "Minimized:" bar);
@@ -159,9 +162,11 @@ a floating jump-to-top button and a copyright footer:
   `localStorage` adapter ([`src/data/localStorageAdapter.ts`](./src/data/localStorageAdapter.ts))
   with an in-memory fallback; changes made in another tab are offered with a
   ✓ / X prompt.
-- **Overview** tab: what the toolkit is, its features and widget kinds.
-- **Payload validation** tab, a playground: `validateWidgetData` with
-  field-level errors.
+- **Overview** tab: what the toolkit is, its features and widget types, and
+  below them the code to use it in your app (the old `#usage` link opens it).
+- **Payload validation**: the caution button at the lower left opens a
+  playground in a dialog: `validateWidgetData` with field-level errors (the old
+  `#validation` link opens the Interactive dashboard).
 
 Widgets and simulated providers live in
 [`src/data/widgets.ts`](./src/data/widgets.ts).
