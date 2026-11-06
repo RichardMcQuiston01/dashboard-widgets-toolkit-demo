@@ -2,7 +2,7 @@
  * React / Next.js variant of the floating donate card.
  *
  * Pair with donate-widget.css (import it, or port the rules into your styling
- * system). Props exist so a project can point at a different PayPal link or
+ * system). Props exist so a project can point at a different Ko-fi link or
  * QR path without editing the component.
  */
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
@@ -10,9 +10,9 @@ import { useCallback, useEffect, useState, type ReactElement } from 'react';
 const STORAGE_KEY = 'donate-card-dismissed';
 
 export interface DonateCardProps {
-  /** PayPal payment link the card sends people to. */
+  /** Ko-fi page the card sends people to. */
   readonly donateUrl?: string;
-  /** Path to the generated QR SVG, relative to the served root. */
+  /** Path to the QR image, relative to the served root. */
   readonly qrSrc?: string;
   /** Set false to make the card non-dismissible (not recommended). */
   readonly dismissible?: boolean;
