@@ -1,23 +1,34 @@
-import { useEffect, useRef, type ReactElement, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 interface SettingsDialogProps {
   readonly open: boolean;
   readonly title: string;
+  /** Label of the close button. Default "Close settings". */
+  readonly closeLabel?: string;
   readonly onClose: () => void;
   readonly children: ReactNode;
 }
 
 /**
- * A modal over the page, built on the native dialog element: it traps focus,
+ * A modal over the page (settings, or an introduction to a tab), built on the
+ * native dialog element: it traps focus,
  * closes on Escape and returns focus to the button that opened it.
  */
 export function SettingsDialog({
   open,
   title,
+  closeLabel = 'Close settings',
   onClose,
   children,
 }: SettingsDialogProps): ReactElement {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId: string = useId();
 
   useEffect(() => {
     const dialog: HTMLDialogElement | null = dialogRef.current;
@@ -29,7 +40,7 @@ export function SettingsDialog({
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="settings-dialog-title"
+      aria-labelledby={titleId}
       onClose={onClose}
       onClick={(event) => {
         // A click on the backdrop (the dialog element itself) closes it.
@@ -39,7 +50,7 @@ export function SettingsDialog({
     >
       <div className="flex items-center justify-between border-b border-brand-100 px-4 py-3 dark:border-brand-800">
         <h2
-          id="settings-dialog-title"
+          id={titleId}
           className="text-lg font-semibold text-brand-700 dark:text-brand-200"
         >
           {title}
@@ -47,8 +58,8 @@ export function SettingsDialog({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close settings"
-          title="Close settings"
+          aria-label={closeLabel}
+          title={closeLabel}
           className="rounded-md p-1.5 text-brand-700 hover:bg-brand-50 dark:text-brand-100 dark:hover:bg-brand-800"
         >
           <svg

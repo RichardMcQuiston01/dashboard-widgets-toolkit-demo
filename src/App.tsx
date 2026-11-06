@@ -33,12 +33,15 @@ import {
 import { BackToTop } from './components/BackToTop';
 import { CollapsingHeader } from './components/CollapsingHeader';
 import { DonateCard } from './components/DonateCard';
+import { InfoIcon, RefreshIcon } from './components/icons';
+import { ToggleSwitch } from './components/ToggleSwitch';
+import { ValidationLauncher } from './components/ValidationLauncher';
+import { INTRO_DELAY_MS, TAB_INTROS } from './data/intro';
 import { Footer } from './components/Footer';
 import { statusBadge } from './components/StatusBadge';
 import { ThemePicker } from './components/ThemePicker';
 import { GearIcon, SettingsDialog } from './components/SettingsDialog';
 import { Overview } from './components/Overview';
-import { Playground } from './components/Playground';
 import { Section } from './components/Section';
 import { WidgetBuilder } from './components/WidgetBuilder';
 import { TabList, TabPanels, type TabDefinition } from './components/Tabs';
@@ -95,18 +98,22 @@ function initialTheme(): Theme {
     : 'light';
 }
 
-const TAB_IDS: readonly string[] = [
-  'dashboard',
-  'builder',
-  'overview',
-  'validation',
-  'usage',
-];
+const TAB_IDS: readonly string[] = ['dashboard', 'builder', 'overview'];
+
+/** Tabs that were merged into another: their old links still work. */
+const RETIRED_TABS: Readonly<Record<string, string>> = {
+  usage: 'overview',
+  validation: 'dashboard',
+};
 
 function readTabFromHash(): string {
   const hashValue: string = window.location.hash.replace('#', '');
-  return TAB_IDS.includes(hashValue) ? hashValue : 'dashboard';
+  const tab: string = RETIRED_TABS[hashValue] ?? hashValue;
+  return TAB_IDS.includes(tab) ? tab : 'dashboard';
 }
+
+/** Tabs whose introduction has opened since this page loaded. */
+const introsShown = new Set<string>();
 
 const noticeButtonClass: string =
   'rounded-md border border-brand-200 bg-white px-2 py-0.5 text-sm font-medium text-brand-700 hover:bg-brand-50 dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100 dark:hover:bg-brand-800';
@@ -201,6 +208,7 @@ export function App(): ReactElement {
   const [showErrorDemo, setShowErrorDemo] = useState<boolean>(false);
   const [refreshCount, setRefreshCount] = useState<number>(0);
   const [outage, setOutage] = useState<boolean>(false);
+  const [introTab, setIntroTab] = useState<string | null>(null);
   const activeDefinitions: readonly WidgetDefinition[] = useMemo(
     () =>
       widgetDefinitions
@@ -355,6 +363,20 @@ export function App(): ReactElement {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // A tab's introduction opens shortly after the tab first shows, once per page
+  // load. Closing it keeps it closed until the page is loaded again; the info
+  // button opens it on demand.
+  useEffect(() => {
+    if (TAB_INTROS[activeTab] === undefined || introsShown.has(activeTab)) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      introsShown.add(activeTab);
+      setIntroTab(activeTab);
+    }, INTRO_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeTab]);
+
   function handleRefresh(): void {
     setRefreshCount((count) => count + 1);
   }
@@ -373,8 +395,8 @@ export function App(): ReactElement {
     stored.setLayout(hasPages ? EMPTY_LAYOUT : PAGED_LAYOUT);
   }
 
-  const buttonClass: string =
-    'rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm font-medium text-brand-700 shadow-sm hover:bg-brand-50 aria-pressed:border-brand-600 aria-pressed:bg-brand-600 aria-pressed:text-white dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100 dark:hover:bg-brand-800';
+  const iconButtonClass: string =
+    'flex size-9 items-center justify-center rounded-md border border-brand-200 bg-white text-brand-700 shadow-sm hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-brand-700 dark:bg-brand-900 dark:text-brand-100 dark:hover:bg-brand-800';
 
   const tabs: readonly TabDefinition[] = [
     {
@@ -383,79 +405,45 @@ export function App(): ReactElement {
       panel: (
         <Section
           id="dashboard"
-          title="Interactive dashboard"
-          description="All seven widget kinds plus an empty state, on three pages (a page bar appears with two or more). Press Customize to move, hide or minimize widgets, add or rename pages and move a widget to another page; Sync status and Store policy are locked. While customizing, a card's Arrange icon has an Options… item for its title, width and what it asks its provider for (Store policy has no options: it is locked against them). The eye button opens a sortable, filterable list. Open Settings (the gear) to change the color theme, light or dark mode and locale. Layouts are saved through a storage adapter (localStorage here) and follow you across tabs. Switch on “Error demo” to see a failing provider stay contained to one card. Each card says how old its data is and has a refresh button; switch on “Simulate outage”, then refresh Revenue, Refund rate or Revenue by month to see a failed refresh keep the last good data with a badge. Tables, bar lists and charts have download buttons (CSV, plus SVG and PNG for charts), the detail dialogs have a Download CSV button, and printing the page gives a clean report."
+          title={TAB_INTROS['dashboard']?.title ?? 'Interactive dashboard'}
+          hideHeading
         >
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              className={`${buttonClass} flex items-center gap-2`}
+              className={iconButtonClass}
               aria-haspopup="dialog"
+              aria-label="Settings"
+              title="Settings"
               onClick={() => setSettingsOpen(true)}
             >
               <GearIcon />
-              Settings
             </button>
             <button
               type="button"
-              className={buttonClass}
+              className={iconButtonClass}
+              aria-label="Refresh data"
+              title="Refresh data"
               onClick={handleRefresh}
             >
-              Refresh data
+              <RefreshIcon />
             </button>
             <button
               type="button"
-              className={buttonClass}
-              aria-pressed={hasPages}
-              onClick={handleTogglePages}
+              className={iconButtonClass}
+              aria-haspopup="dialog"
+              aria-label="About this page"
+              title="About this page"
+              onClick={() => setIntroTab('dashboard')}
             >
-              Pages: {hasPages ? 'on' : 'off'}
+              <InfoIcon />
             </button>
-            <button
-              type="button"
-              className={buttonClass}
-              aria-pressed={editMode === 'toggle'}
-              onClick={() =>
-                setEditMode((current) =>
-                  current === 'toggle' ? 'always' : 'toggle'
-                )
-              }
-            >
-              Edit controls:{' '}
-              {editMode === 'toggle' ? 'behind Customize' : 'always shown'}
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              aria-pressed={isAdmin}
-              onClick={() => setIsAdmin((current) => !current)}
-            >
-              Administrator: {isAdmin ? 'on' : 'off'}
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              aria-pressed={showErrorDemo}
-              onClick={() => setShowErrorDemo((current) => !current)}
-            >
-              Error demo: {showErrorDemo ? 'on' : 'off'}
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              aria-pressed={isFilled}
-              onClick={() => setIsFilled((current) => !current)}
-            >
-              Fill widgets: {isFilled ? 'on' : 'off'}
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              aria-pressed={outage}
-              onClick={handleToggleOutage}
-            >
-              Simulate outage: {outage ? 'on' : 'off'}
-            </button>
+            <ToggleSwitch
+              label="Administrator"
+              title="Administrator: may change locked widgets"
+              checked={isAdmin}
+              onChange={setIsAdmin}
+            />
           </div>
           <StorageNotice stored={stored} />
           <SettingsDialog
@@ -463,6 +451,52 @@ export function App(): ReactElement {
             title="Settings"
             onClose={() => setSettingsOpen(false)}
           >
+            <fieldset className="mb-5">
+              <legend className="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-200">
+                Demo options
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <ToggleSwitch
+                  label="Pages"
+                  hint="Three pages with a page bar, or one page."
+                  checked={hasPages}
+                  onChange={handleTogglePages}
+                />
+                <ToggleSwitch
+                  label="Fill widgets"
+                  hint="Cards stretch to fill free space in their row."
+                  checked={isFilled}
+                  onChange={setIsFilled}
+                />
+                <ToggleSwitch
+                  label="Error demo"
+                  hint="Adds a widget whose provider fails."
+                  checked={showErrorDemo}
+                  onChange={setShowErrorDemo}
+                />
+                <ToggleSwitch
+                  label="Simulate outage"
+                  hint="Refreshing Revenue, Refund rate or Revenue by month fails."
+                  checked={outage}
+                  onChange={handleToggleOutage}
+                />
+              </div>
+              <label className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-medium">Edit controls</span>
+                <select
+                  value={editMode}
+                  onChange={(event) =>
+                    setEditMode(
+                      event.target.value === 'toggle' ? 'toggle' : 'always'
+                    )
+                  }
+                  className="rounded-md border border-brand-200 bg-white px-2 py-1.5 dark:border-brand-700 dark:bg-brand-900"
+                >
+                  <option value="toggle">Behind Customize</option>
+                  <option value="always">Always shown</option>
+                </select>
+              </label>
+            </fieldset>
             <fieldset className="mb-5">
               <legend className="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-200">
                 Mode
@@ -551,9 +585,21 @@ export function App(): ReactElement {
       panel: (
         <Section
           id="builder"
-          title="Widget Builder"
-          description="An admin screen for making widgets without code. Each data source is described once in code (what it returns and what it can be asked for); the form below can only combine those choices. Pick a source, name the widget, then choose which of the source's options viewers get (and their defaults), add alternate views, set the width and lock, and watch the preview as you type. A change the source can't serve is refused with its reason. Saved widgets are kept in this browser as JSON and appear on the dashboard at the bottom, loaded through the same providers as the Interactive dashboard. Switch “Building as” to Viewer to see the same screen under a policy: two of the three sources, at most three widgets, and only some fields; the server’s check refuses anything more, and you can try to cheat it."
+          title={TAB_INTROS['builder']?.title ?? 'Widget Builder'}
+          hideHeading
         >
+          <div className="mb-4 flex items-center gap-3">
+            <button
+              type="button"
+              className={iconButtonClass}
+              aria-haspopup="dialog"
+              aria-label="About this page"
+              title="About this page"
+              onClick={() => setIntroTab('builder')}
+            >
+              <InfoIcon />
+            </button>
+          </div>
           <WidgetBuilder
             context={shopContext}
             theme={
@@ -566,153 +612,6 @@ export function App(): ReactElement {
       ),
     },
     { id: 'overview', label: 'Overview', panel: <Overview /> },
-    {
-      id: 'validation',
-      label: 'Payload validation',
-      panel: (
-        <Section
-          id="validation"
-          title="Payload validation"
-          description="Providers can return plain JSON, so a server can resolve widgets and a client can validate them. Edit the payload to see field-level errors."
-        >
-          <Playground />
-        </Section>
-      ),
-    },
-    {
-      id: 'usage',
-      label: 'Use it in your app',
-      panel: (
-        <Section
-          id="usage"
-          title="Use it in your app"
-          description="Install the package, define widgets, register a provider per key, store the layout and render."
-        >
-          <pre className="overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
-            <code>{`npm install @richardmcquiston01/dashboard-widgets-toolkit
-
-import { defineWidget, createLayoutPersistence, optionValuesFromLayout, viewValuesFromLayout, withClones, parseDetailLink, withDetailLink, farPageWidgetKeys } from '@richardmcquiston01/dashboard-widgets-toolkit';
-import { Dashboard, useWidgets, useStoredLayout } from '@richardmcquiston01/dashboard-widgets-toolkit/react';
-import '@richardmcquiston01/dashboard-widgets-toolkit/styles.css';`}</code>
-          </pre>
-          <h3 className="mt-6 text-lg font-semibold text-brand-700 dark:text-brand-200">
-            Declare options, lock a widget, store the layout
-          </h3>
-          <pre className="mt-2 overflow-x-auto rounded-md bg-brand-900 p-4 text-sm text-brand-100">
-            <code>{`const topProducts = defineWidget({
-  key: 'top-products',
-  title: 'Most popular products',
-  kind: 'TABLE',
-  locked: { move: true }, // pinned; still hideable
-  minWidth: 6, // viewers can resize it, but not below half the row
-  options: [
-    { key: 'limit', type: 'number', label: 'Rows', min: 3, max: 10, default: 5 },
-    { key: 'order', type: 'sort', label: 'Order by', apply: 'client',
-      columns: [{ key: 'c2', label: 'Sold' }], default: 'c2:desc' },
-  ],
-});
-
-// Providers get the resolved options; only changed widgets reload.
-const providers = {
-  'top-products': (context, definition, { options }) => load(options.limit),
-};
-// Bring your own storage: an adapter has get, set, remove and subscribe.
-const persistence = createLayoutPersistence(withFallback(localStorageAdapter, memoryAdapter()));
-const stored = useStoredLayout({ persistence, scope, definitions, defaultLayout });
-// stored.activePage and stored.backup go to Dashboard too (see below): a reload
-// returns to the same page, and Revert still works after a reload mid-edit.
-
-// The Options dialog saves each viewer's title, width, view and option values
-// in the layout, and Duplicate adds clones. Clones are widgets too: add them to
-// the definitions so they load through their original's provider.
-const all = useMemo(
-  () => withClones(definitions, stored.layout),
-  [definitions, stored.layout.clones]
-);
-const optionValues = useMemo(
-  () => optionValuesFromLayout(all, stored.layout),
-  [all, stored.layout]
-);
-// A view your provider supplies (no convert) loads when chosen: the provider
-// gets options.view, so pass the viewers' choices too.
-const viewValues = useMemo(
-  () => viewValuesFromLayout(all, stored.layout),
-  [all, stored.layout]
-);
-// Dashboard filters (a store, a period) are yours to keep: state, the URL or
-// storage. Widgets name the filters they use (filters: ['channel'], [] = none)
-// and providers read options.filters; only those widgets reload on a change.
-const filterState = useDashboardFilters(filters);
-const { widgets, refresh, release, gridRef } = useWidgets(all, providers, context, {
-  loadWhen: 'visible', // a widget loads when its card first shows (wrap Dashboard in <div ref={gridRef}>)
-  optionValues,
-  viewValues,
-  filters,
-  filterValues: filterState.values,
-});
-// Optional: drop the data of pages the viewer left far behind. It loads again
-// when they return to that page (from your cache first, if you pass one).
-useEffect(() => {
-  release(farPageWidgetKeys(all, stored.layout, stored.activePage ?? firstPageKey, 1));
-}, [release, all, stored.layout, stored.activePage]);
-
-// Keep the open detail view in the URL (?widget=orders&sort=total:desc&page=2):
-// parse it against the definitions, write it back with withDetailLink.
-const detail = useMemo(() => {
-  const parsed = parseDetailLink(search, all);
-  return parsed.ok ? (parsed.value ?? null) : null;
-}, [search, all]);
-
-// Table columns can say how their cells are shown (email, url, image, color,
-// custom). A custom column names a formatter you register once; a missing or
-// failing one shows the cell's text and reports through onFormatterError.
-const accounts = {
-  kind: 'TABLE',
-  columns: [
-    { label: 'Contact', type: 'email' },
-    { label: 'Logo', type: 'image' },
-    { label: 'Status', type: 'custom', formatter: 'statusBadge' },
-  ],
-  rows: [[
-    { text: 'Ann Lee', value: 'ann@acme.example' },
-    { text: 'Acme logo', value: '/logos/acme.svg' },
-    { text: 'Active', value: 'active' },
-  ]],
-};
-// <WidgetSettingsProvider formatters={{ statusBadge: ({ text, value }) => <Badge status={value}>{text}</Badge> }}>
-
-// Freshness: "Updated 2 minutes ago" and a refresh button on each card. A
-// failed refresh keeps the last good data and says so. Export: download
-// buttons on tables, bar lists and charts, and CSV in the detail view.
-<Dashboard
-  widgets={widgets}
-  freshness
-  onRefresh={refresh}
-  exportFormats={['csv', 'svg', 'png']}
-  layout={stored.layout}
-  onLayoutChange={stored.setLayout}
-  editMode="toggle"
-  draggable
-  filters={filters}
-  filterValues={filterState.values}
-  onFilterChange={filterState.setValues}
-  activePage={stored.activePage}
-  onActivePageChange={stored.setActivePage}
-  backup={stored.backup}
-  onBackup={stored.setBackup}
-  detail={detail}
-  onDetailChange={(next, reason) => {
-    const query = withDetailLink(location.search, next);
-    const url = (query === '' ? location.pathname : '?' + query) + location.hash;
-    if (reason === 'query') history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
-    setSearch(location.search);
-  }}
-/>`}</code>
-          </pre>
-        </Section>
-      ),
-    },
   ];
 
   return (
@@ -760,7 +659,18 @@ const accounts = {
 
       <Footer />
       <BackToTop />
+      <ValidationLauncher />
       <DonateCard />
+      <SettingsDialog
+        open={introTab !== null}
+        title={introTab === null ? '' : (TAB_INTROS[introTab]?.title ?? '')}
+        closeLabel="Close introduction"
+        onClose={() => setIntroTab(null)}
+      >
+        <p className="max-w-3xl text-sm text-slate-700 dark:text-slate-300">
+          {introTab === null ? '' : (TAB_INTROS[introTab]?.description ?? '')}
+        </p>
+      </SettingsDialog>
     </div>
   );
 }

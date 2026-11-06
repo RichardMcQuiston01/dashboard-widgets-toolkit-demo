@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Changed (UI updates, issues #70 and #71)
+
+- **Interactive dashboard tab:** the heading and description moved into an
+  introduction dialog that opens shortly after the tab first shows, once per
+  page load; an info button next to the controls opens it again, and the
+  heading stays in the page for screen readers. Settings and Refresh data are
+  icon buttons (their text is the `title`), and Administrator is a switch.
+  Pages, Edit controls, Fill widgets, Error demo and Simulate outage moved into
+  the Settings dialog (switches, and a select for Edit controls).
+- **Widget Builder tab:** the same introduction dialog and info button.
+- **Overview tab:** "Widget kinds" is now "Widget types" (all seven types in
+  the toolkit are listed), the feature list is current, and the "Use it in your
+  app" code moved here from its own tab. `#usage` opens the Overview.
+- **Payload validation** is a dialog opened by a floating caution button, and
+  the tab is gone. `#validation` opens the Interactive dashboard.
+- New components: `ToggleSwitch`, `icons`, `ValidationLauncher`, `Usage`;
+  `SettingsDialog` takes a `closeLabel` and labels itself with a generated id;
+  `Section` can hide its heading.
+
 ### Changed (toolkit 0.36.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.36.0` (the Vue
