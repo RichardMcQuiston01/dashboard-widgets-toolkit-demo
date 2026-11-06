@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.36.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.36.0` (the Vue
+  filter bar and detail view, and `@richardmcquiston01/storage-adapters`
+  `^0.23.0`). No code changes were needed: the demo only uses `/react`, whose
+  exports are unchanged.
+
 ### Changed (toolkit 0.35.1)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.35.1` (donate
