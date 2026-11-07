@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed (toolkit 0.37.0)
+
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.37.0` (drag and
+  drop and swipe in the Vue renderers, which completes them). No code changes
+  were needed: the demo only uses `/react`, whose exports are unchanged.
+
 ### Changed (UI updates, issues #70 and #71)
 
 - **Interactive dashboard tab:** the heading and description moved into an
