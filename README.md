@@ -92,13 +92,25 @@ the tab's controls opens it again):
   Switch to **Viewer** to see the same screen under a policy (allowed sources, a
   widget quota, only some fields editable): the server's check, `validateViewerSave`,
   refuses anything more, and a button tries to cheat it.
-- **Pages**: the three pages swipe on a touch screen, a card dragged by its
+- **Pages**: the four pages swipe on a touch screen, a card dragged by its
   handle onto another page's tab moves there (while customizing), and a page two
   away from the one in view is released and loads again when you come back
   (`loadWhen: 'visible'`, `release`, `farPageWidgetKeys`).
 - **Error demo** toggle (off by default): adds a clearly labelled widget whose
   provider intentionally throws, showing that one failure stays on its own
   card (with a Retry button) while the rest of the dashboard keeps working.
+- **API adapter** page: four cards (a table, a KPI, a bar list and an alert
+  list) fed by one pretend orders API through the toolkit's `defineAdapter`. A
+  `DataSource` in [`src/data/orderAdapters.ts`](./src/data/orderAdapters.ts)
+  holds the `fetch` code (against a local fixture,
+  [`src/data/fixtureApi.ts`](./src/data/fixtureApi.ts), which answers like
+  `fetch` and honors the abort signal), and each card has a pure mapper built
+  with `toTable`, `toKpi`, `toBarList` and `toAlertList`. The source has a
+  `scope`, so the four cards share one request: each says which API request it
+  came from, and the Refresh button reloads them all from a single new one.
+  **Simulate outage** makes the fixture answer 503, so refreshing one card
+  shows the failed-refresh badge and keeps its last good data. `bindProviders` checks the widgets and providers fit
+  together when the page loads.
 - **Settings** (gear button): a modal with the light / dark mode, the color theme
   picker and the locale switcher.
 - **Locale switcher** (in Settings): formats numbers and currency per locale. Providers
@@ -126,7 +138,7 @@ the tab's controls opens it again):
 - **Locked widgets**: "Sync status" is pinned (it can still be hidden or
   minimized) and "Store policy" cannot be moved, hidden or minimized. The
   "Administrator" toggle passes `overrideLocks`.
-- **Pages**: three pages with a page bar (shown for two or more pages). While
+- **Pages**: four pages with a page bar (shown for two or more pages). While
   customizing, add, rename, move and delete pages, and move a widget to another
   page; the "Pages" toggle switches to a single page.
 - **Declared options and the Options dialog**: six widgets declare options with
