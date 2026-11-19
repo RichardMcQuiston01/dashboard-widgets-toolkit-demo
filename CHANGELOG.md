@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added (toolkit 0.39.0)
+
+- **API adapter** page (a fourth page): four cards fed by one pretend orders
+  API through `defineAdapter`. A `DataSource` holds the `fetch` code against a
+  local fixture (`src/data/fixtureApi.ts`, which answers like `fetch` and honors
+  the abort signal), each card has a pure mapper built with `toTable`, `toKpi`,
+  `toBarList` and `toAlertList`, and the source's `scope` makes the four cards
+  share one request. `bindProviders` checks the widgets and providers fit
+  together when the page loads. Simulate outage makes the fixture answer 503.
+- Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.39.0`.
+  Returning visitors whose layout was saved before this page existed see the
+  four new cards on the first page until they use Reset layout.
+
 ### Changed (toolkit 0.37.0)
 
 - Now uses `@richardmcquiston01/dashboard-widgets-toolkit` `^0.37.0` (drag and

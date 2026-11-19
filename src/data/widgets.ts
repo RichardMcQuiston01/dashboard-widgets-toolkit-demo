@@ -1,4 +1,5 @@
 import {
+  bindProviders,
   defineWidget,
   emptyWidget,
   formatValue,
@@ -12,6 +13,9 @@ import {
   type WidgetProvider,
   type WidgetProviders,
 } from '@richardmcquiston01/dashboard-widgets-toolkit';
+
+import { setFixtureApiDown } from './fixtureApi';
+import { apiProviders, apiWidgetDefinitions } from './orderAdapters';
 
 /** Context handed to every provider; the demo lets viewers change it. */
 export interface ShopContext extends WidgetContext {
@@ -54,6 +58,7 @@ function channelShare(filters: Readonly<Record<string, unknown>>): number {
 }
 
 export const widgetDefinitions: readonly WidgetDefinition[] = [
+  ...apiWidgetDefinitions,
   defineWidget({
     key: 'revenue',
     filters: ['channel'],
@@ -773,6 +778,7 @@ let simulatedOutage = false;
  */
 export function setSimulatedOutage(active: boolean): void {
   simulatedOutage = active;
+  setFixtureApiDown(active);
 }
 
 function withLatency(
@@ -796,8 +802,17 @@ function withLatency(
   );
 }
 
+// `bindProviders` checks that every widget has a provider and that an adapter
+// builds the kind its widget is, so a typo in a key fails here with a message
+// instead of showing an error card later.
+const boundProviders = bindProviders(widgetDefinitions, {
+  ...withLatency(baseProviders),
+  ...apiProviders,
+});
+if (!boundProviders.ok) throw new Error(boundProviders.error);
+
 export const widgetProviders: WidgetProviders<ShopContext> =
-  withLatency(baseProviders);
+  boundProviders.value;
 
 /**
  * The full data behind each "View" button. A real app would query its
