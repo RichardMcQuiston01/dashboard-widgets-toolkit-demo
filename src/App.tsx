@@ -280,7 +280,7 @@ export function App(): ReactElement {
       filterValues: filterState.values,
     }
   );
-  // With three pages, a page two away from the one in view is released: its
+  // With four pages, a page two away from the one in view is released: its
   // payloads are dropped and it loads again when the viewer returns to it.
   const pageInView: string | undefined =
     stored.activePage ?? pageList(stored.layout)[0]?.key;
@@ -458,7 +458,7 @@ export function App(): ReactElement {
               <div className="grid gap-3 sm:grid-cols-2">
                 <ToggleSwitch
                   label="Pages"
-                  hint="Three pages with a page bar, or one page."
+                  hint="Four pages with a page bar, or one page."
                   checked={hasPages}
                   onChange={handleTogglePages}
                 />
@@ -476,7 +476,7 @@ export function App(): ReactElement {
                 />
                 <ToggleSwitch
                   label="Simulate outage"
-                  hint="Refreshing Revenue, Refund rate or Revenue by month fails."
+                  hint="Refreshing Revenue, Refund rate, Revenue by month or an API adapter card fails."
                   checked={outage}
                   onChange={handleToggleOutage}
                 />

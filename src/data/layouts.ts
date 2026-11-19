@@ -9,7 +9,7 @@ import {
 import { localStorageAdapter } from './localStorageAdapter';
 
 /**
- * The demo's starting layout: three pages. A layout without `pages` is one
+ * The demo's starting layout: four pages. A layout without `pages` is one
  * implicit page, and the page bar shows only with two or more. Widgets no page
  * lists (the error demo) land on their home page, the first.
  */
@@ -36,6 +36,13 @@ export const PAGED_LAYOUT: DashboardLayout = {
       key: 'catalog',
       title: 'Catalog',
       order: ['top-products', 'recent-orders', 'reviews', 'accounts'],
+      hidden: [],
+      minimized: [],
+    },
+    {
+      key: 'api',
+      title: 'API adapter',
+      order: ['api-orders', 'api-paid', 'api-status', 'api-refunded'],
       hidden: [],
       minimized: [],
     },
